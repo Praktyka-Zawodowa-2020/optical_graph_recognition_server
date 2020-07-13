@@ -17,35 +17,32 @@ namespace Api.Services
     public class UserService : IUserService
     {
         private DataContext _context;
-        private readonly GoogleIdTokenVerifier _googleIdTokenVerifier;
+        private readonly GoogleAuthHandler _googleAuthHandler;
         private readonly AppSettings _appSettings;
 
         public UserService(
             DataContext context,
             IOptions<AppSettings> appSettings,
-            GoogleIdTokenVerifier googleIdTokenVerifier)
+            GoogleAuthHandler googleAuthHandler)
         {
             _context = context;
-            _googleIdTokenVerifier = googleIdTokenVerifier;
+            _googleAuthHandler = googleAuthHandler;
             _appSettings = appSettings.Value;
         }
         public AuthenticateResponse Authenticate(AuthenticateRequest model)
         {
-            //TODO
-            //validate google id token
-            var result = _googleIdTokenVerifier.Verifify(model.IdToken, model.AuthCode);
+            // google authentication
+            var payloadedUser = _googleAuthHandler.Authenticate(model.IdToken, model.AuthCode);
+            if (payloadedUser == null) return null;
 
-            // return null if token invalid
-            if (result == null) return null;
 
-            var paylodedUser = result.Result;
-
-            var user = _context.Users.SingleOrDefault(x => x.Mail == paylodedUser.Mail);
-
+            var user = _context.Users.SingleOrDefault(x => x.GoogleId == payloadedUser.GoogleId);
             if (user == null)
-                user = paylodedUser;
-            else
-                paylodedUser = null;
+            {
+                user = payloadedUser;
+                _context.Users.Add(user);
+                _context.SaveChanges();
+            }
 
             // authentication successful so generate jwt and refresh tokens
             var jwtToken = generateJwtToken(user);
@@ -54,10 +51,7 @@ namespace Api.Services
             // save refresh token
             user.RefreshTokens.Add(refreshToken);
 
-            if (paylodedUser == null)
-                _context.Update(user);
-            else
-                _context.Users.Add(user);
+            _context.Update(user);
 
             _context.SaveChanges();
 

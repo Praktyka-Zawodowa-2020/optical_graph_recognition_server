@@ -29,7 +29,7 @@ namespace Api.Controllers
             var response = _userService.Authenticate(model);
 
             if (response == null)
-                return BadRequest(new { message = "Wrong google id_token." });
+                return BadRequest(new { message = "Invalid google token." });
 
             setTokenCookie(response.RefreshToken);
 

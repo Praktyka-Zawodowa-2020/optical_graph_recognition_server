@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace Api.Services
 {
-    interface IGoogleDriveService
+    public interface IGoogleDriveService
     {
-        bool SendFile();
+        IList<Google.Apis.Drive.v3.Data.File> GetFiles(string userGoogleId);
     }
 }

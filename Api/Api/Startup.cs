@@ -88,7 +88,8 @@ namespace Api
             // configure DI for application services
             services.AddScoped<IImageValidator, ImageValidator>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<GoogleIdTokenVerifier, GoogleIdTokenVerifier>();
+            services.AddScoped<IGoogleDriveService, GoogleDriveService>();
+            services.AddScoped<GoogleAuthHandler, GoogleAuthHandler>();
 
         }
 
