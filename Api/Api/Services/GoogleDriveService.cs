@@ -4,7 +4,6 @@ using Google.Apis.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Api.Services
 {
@@ -20,8 +19,8 @@ namespace Api.Services
         public IList<Google.Apis.Drive.v3.Data.File> GetFiles(string userGoogleId)
         {
             var user = _context.Users.SingleOrDefault(u => u.GoogleId == userGoogleId);
-            var userCredentialsResult = _googleAuthHandler.GetUserCredentials(userGoogleId);
-            var userCredentials = userCredentialsResult == null ? null : userCredentialsResult.Result;
+            var userCredentials = _googleAuthHandler.GetUserCredentials(userGoogleId).Result;
+            if (userCredentials == null) return null;
 
             DriveService driveService = new DriveService(new BaseClientService.Initializer()
             {
