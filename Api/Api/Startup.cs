@@ -65,7 +65,7 @@ namespace Api
                 };
             });
 
-            // add swagger
+            // configure swagger
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo
