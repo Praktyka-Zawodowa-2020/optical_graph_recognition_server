@@ -82,7 +82,6 @@ namespace Api.Helpers
             {
                 try
                 {
-
                     // token data does not exist for this user
                     tokenResponse = await authorizationCodeFlow.ExchangeCodeForTokenAsync(
                       userId, // user for tracking the userId on our backend system
