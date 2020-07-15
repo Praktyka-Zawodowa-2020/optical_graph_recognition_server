@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers
 {
     [Produces("text/plain")]
-    [Route("api/[controller]")]
+    [Route("api/image")]
     [ApiController]
-    public class FileController : ControllerBase
+    public class ImageController : ControllerBase
     {
         private readonly string _targetFilePath = "/Uploads/";
         private readonly string _targetInFileName = "in";
@@ -20,7 +20,7 @@ namespace Api.Controllers
 
         private readonly IImageValidator _imageValidator;
 
-        public FileController(IImageValidator imageValidator)
+        public ImageController(IImageValidator imageValidator)
         {
             _imageValidator = imageValidator;
         }
@@ -32,9 +32,9 @@ namespace Api.Controllers
         /// <returns>A guid to newly created source in the server, which will be used for later requests.</returns>
         /// <response code="200">Returns guid to the newly created resource</response>
         /// <response code="400"> Returns error message if the file is not valid</response> 
-        [HttpPost]
+        [HttpPost("process")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Post(IFormFile file)
+        private async Task<IActionResult> Post(IFormFile file)
         {
             if (file == null)
                 return BadRequest($"Please enter image file specyfying content-type as multipart/form-data under the key 'file'");
@@ -69,8 +69,8 @@ namespace Api.Controllers
         /// <param name="guid">GUID to the request made previously.</param> 
         /// <response code="200"> Returns the file in response body</response>
         /// <response code="400">Returns error message if the file is not found</response>
-        [HttpGet("{guid}")]
-        public IActionResult Get(Guid guid)
+        [HttpGet("get/{guid}")]
+        private IActionResult Get(Guid guid)
         {
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
             if (!dir.Exists)
