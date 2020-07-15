@@ -23,7 +23,7 @@ namespace Api.Controllers
             _dataContext = dataContext;
             _driveService = driveService;
         }
-        [HttpGet]
+        [HttpGet("getAllFiles")]
         public IActionResult GetFiles()
         {
             var userId = User.Claims.ToList()[0].Value;

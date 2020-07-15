@@ -29,7 +29,7 @@ namespace Api.Services
 
             // Define parameters of request.
             FilesResource.ListRequest listRequest = driveService.Files.List();
-            listRequest.Fields = "*";
+            listRequest.Fields = "*/name";
             try
             {
                 IList<Google.Apis.Drive.v3.Data.File> files = listRequest.Execute().Files;
