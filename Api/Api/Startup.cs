@@ -35,7 +35,7 @@ namespace Api
         public void ConfigureServices(IServiceCollection services)
         {
             // in memory database used for simplicity, change to a real db for production applications
-            services.AddDbContext<DataContext>(x => x.UseInMemoryDatabase("TestDb"));
+            services.AddDbContext<DataContext>(x => x.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
             services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.IgnoreNullValues = true);
 
             // configure strongly typed settings objects
@@ -94,7 +94,7 @@ namespace Api
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DataContext dbContext)
         {
             app.UseStaticFiles();
 
@@ -122,6 +122,16 @@ namespace Api
             {
                 endpoints.MapControllers();
             });
+
+            this.ApplyMigrations(dbContext);
+        }
+
+        private void ApplyMigrations(DataContext context)
+        {
+            if (context.Database.GetPendingMigrations().Any())
+            {
+                context.Database.Migrate();
+            }
         }
     }
 }
