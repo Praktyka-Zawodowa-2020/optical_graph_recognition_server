@@ -34,7 +34,7 @@ namespace Api.Controllers
         /// <response code="400"> Returns error message if the file is not valid</response> 
         [HttpPost("process")]
         [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
-        public async Task<IActionResult> Post(IFormFile file)
+        private async Task<IActionResult> Post(IFormFile file)
         {
             if (file == null)
                 return BadRequest($"Please enter image file specyfying content-type as multipart/form-data under the key 'file'");
@@ -70,7 +70,7 @@ namespace Api.Controllers
         /// <response code="200"> Returns the file in response body</response>
         /// <response code="400">Returns error message if the file is not found</response>
         [HttpGet("get/{guid}")]
-        public IActionResult Get(Guid guid)
+        private IActionResult Get(Guid guid)
         {
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
             if (!dir.Exists)

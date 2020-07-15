@@ -9,3 +9,5 @@ services:
     ports:
       - "50613:80"
       - "44371:443"
+    volumes:
+      - ../GoogleStorage_VS:/root/.local/share/google-filedatastore/

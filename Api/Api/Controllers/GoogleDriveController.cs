@@ -27,7 +27,7 @@ namespace Api.Controllers
         public IActionResult GetFiles()
         {
             var userId = User.Claims.ToList()[0].Value;
-            var user = _dataContext.Users.SingleOrDefault(u => u.Id.ToString().Equals(userId));
+            var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);
 
             var files = _driveService.GetFiles(user.GoogleId);
 

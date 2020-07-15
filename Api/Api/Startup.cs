@@ -19,6 +19,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Api
 {
@@ -68,21 +69,7 @@ namespace Api
             // configure swagger
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo
-                {
-                    Version = "v1",
-                    Title = "Optical Graph Recognition Server API",
-                    Description = "ASP.NET Core Web API",
-                    Contact = new OpenApiContact
-                    {
-                        Name = "Grzegorz Choiñski",
-                        Email = "grzegorzchoinski97@gmail.com",
-                    },
-                });
-
-                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                c.IncludeXmlComments(xmlPath);
+                this. ConfigureSwagger(c);
             });
 
             // configure DI for application services
@@ -132,6 +119,55 @@ namespace Api
             {
                 context.Database.Migrate();
             }
+        }
+
+        private void ConfigureSwagger(SwaggerGenOptions c)
+        {
+
+            c.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Version = "v1",
+                Title = "Optical Graph Recognition Server API",
+                Description = "ASP.NET Core Web API",
+                Contact = new OpenApiContact
+                {
+                    Name = "Grzegorz Choiñski",
+                    Email = "grzegorzchoinski97@gmail.com",
+                },
+            });
+
+            var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+            var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+            c.IncludeXmlComments(xmlPath);
+
+
+            // Bearer token authentication
+            OpenApiSecurityScheme securityDefinition = new OpenApiSecurityScheme()
+            {
+                Name = "Bearer",
+                BearerFormat = "JWT",
+                Scheme = "bearer",
+                Description = "Specify the authorization token.",
+                In = ParameterLocation.Header,
+                Type = SecuritySchemeType.Http,
+            };
+            c.AddSecurityDefinition("jwt_auth", securityDefinition);
+
+            // Make sure swagger UI requires a Bearer token specified
+            OpenApiSecurityScheme securityScheme = new OpenApiSecurityScheme()
+            {
+                Reference = new OpenApiReference()
+                {
+                    Id = "jwt_auth",
+                    Type = ReferenceType.SecurityScheme
+                }
+            };
+            OpenApiSecurityRequirement securityRequirements = new OpenApiSecurityRequirement()
+            {
+                {securityScheme, new string[] { }},
+            };
+
+            c.AddSecurityRequirement(securityRequirements);
         }
     }
 }

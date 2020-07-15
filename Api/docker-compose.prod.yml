@@ -11,3 +11,4 @@ services:
       - "443:443"
     volumes:
       - ../Data:/app/Data
+      - ../GoogleStorage:/root/.local/share/google-filedatastore/
