@@ -5,9 +5,10 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=https://+:443;http://+:80
-      - ASPNETCORE_HTTPS_PORT=44371
+      - ASPNETCORE_HTTPS_PORT=443
     ports:
-      - "50613:80"
-      - "44371:443"
+      - "80:80"
+      - "443:443"
     volumes:
-      - ../GoogleStorage_VS:/root/.local/share/google-filedatastore/
+      - ../Data:/app/Data
+      - ../GoogleStorage:/root/.local/share/google-filedatastore/
