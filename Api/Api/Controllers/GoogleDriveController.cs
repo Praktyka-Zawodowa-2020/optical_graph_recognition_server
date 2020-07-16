@@ -23,6 +23,13 @@ namespace Api.Controllers
             _dataContext = dataContext;
             _driveService = driveService;
         }
+
+        /// <summary>
+        ///     Lists files from user's google drive.
+        /// </summary>
+        /// <remarks>
+        ///     For testing purposes.
+        /// </remarks>
         [HttpGet("getAllFiles")]
         public IActionResult GetFiles()
         {

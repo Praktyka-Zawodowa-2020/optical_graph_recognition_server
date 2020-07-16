@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.Models;
 using Api.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
-    [Produces("text/plain")]
+    [Authorize]
+    [Produces("application/json")]
     [Route("api/image")]
     [ApiController]
     public class ImageController : ControllerBase
     {
-        private readonly string _targetFilePath = "/Uploads/";
+        private readonly string _targetFilePath = "/app/uploads/";
         private readonly string _targetInFileName = "in";
         private readonly string _targetOutFileName = "out";
 
@@ -33,8 +36,7 @@ namespace Api.Controllers
         /// <response code="200">Returns guid to the newly created resource</response>
         /// <response code="400"> Returns error message if the file is not valid</response> 
         [HttpPost("process")]
-        [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
-        private async Task<IActionResult> Post(IFormFile file)
+        public async Task<IActionResult> Post(IFormFile file)
         {
             if (file == null)
                 return BadRequest($"Please enter image file specyfying content-type as multipart/form-data under the key 'file'");
@@ -45,9 +47,11 @@ namespace Api.Controllers
             if (!_imageValidator.IsValid(file.OpenReadStream(), ext))
                 return BadRequest($"Wrong file format");
 
+            var userId = User.Claims.ToList()[0].Value;
+
 
             Guid guid = Guid.NewGuid();
-            var path = Path.Combine(_targetFilePath, guid.ToString());
+            var path = Path.Combine(_targetFilePath, userId.ToString(), guid.ToString());
 
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
@@ -58,7 +62,7 @@ namespace Api.Controllers
             using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetOutFileName, ext)), FileMode.Create))
                 await file.CopyToAsync(targetStream);
 
-            return Ok(guid.ToString());
+            return Ok(new { guid });
         }
         /// <summary>
         ///     Downloads desired file.
@@ -67,23 +71,24 @@ namespace Api.Controllers
         ///     Returns desired file based on previous requests GUID.
         /// </remarks>
         /// <param name="guid">GUID to the request made previously.</param> 
+        /// <param name="name">Desired name of returned file. Defaults to "graph".</param> 
+        /// <param name="format">Format, in which processed graph is returned. Defaults to GraphML.</param> 
         /// <response code="200"> Returns the file in response body</response>
         /// <response code="400">Returns error message if the file is not found</response>
         [HttpGet("get/{guid}")]
-        private IActionResult Get(Guid guid)
+        public IActionResult Get(Guid guid, [FromQuery] string name="graph", [FromQuery] string format=".graphml")
         {
-            DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
+            var userId = User.Claims.ToList()[0].Value;
+            DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath,userId.ToString(), guid.ToString()));
             if (!dir.Exists)
                 return BadRequest("There is no history request with this guid");
 
             FileInfo[] files = dir.GetFiles(string.Concat(_targetOutFileName, "*"), SearchOption.TopDirectoryOnly);
 
             string path = string.Empty;
-            string name = string.Empty;
             foreach (var item in files)
             {
                 path = item.FullName;
-                name = item.Name;
             }
 
             if (path.Equals(string.Empty))
@@ -91,7 +96,7 @@ namespace Api.Controllers
 
             var stream = System.IO.File.OpenRead(path);
 
-            return File(stream, "application/octet-stream", name);
+            return File(stream, "application/octet-stream", String.Concat(name, format));
         }
     }
 }
