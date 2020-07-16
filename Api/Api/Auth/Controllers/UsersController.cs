@@ -22,6 +22,14 @@ namespace Api.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        ///     Sign-ins user.
+        /// </summary>
+        /// <remarks>
+        ///     Signs ins user based on Google Codes acquired by signing in to Google in Android Client.
+        /// </remarks>
+        /// <response code="200"> Returns access_token in response body used to authorize this API and refresh_token in HttpOnly cookie, that needs to be stored for later - can be used to obtain new access_token if one expires.</response>
+        /// <response code="400">Invalid authCode.</response>
         [AllowAnonymous]
         [HttpPost("authenticate")]
         public IActionResult Authenticate([FromBody] AuthenticateRequest model)
@@ -35,6 +43,14 @@ namespace Api.Controllers
 
             return Ok(response);
         }
+        /// <summary>
+        ///     Refreshes access_token.
+        /// </summary>
+        /// <remarks>
+        ///     Refreshes access_token based on refresh_token provided in "refreshToken" cookie. Each refresh_token can be used only once.
+        /// </remarks>
+        /// <response code="200"> Returns refreshed access_token along with a new refresh token.</response>
+        /// <response code="400">Invalid token.</response>
         [AllowAnonymous]
         [HttpPost("refresh-token")]
         public IActionResult RefreshToken()
@@ -49,7 +65,15 @@ namespace Api.Controllers
 
             return Ok(response);
         }
-
+        /// <summary>
+        ///     Makes specific refresh_token not valid anymore.
+        /// </summary>
+        /// <remarks>
+        ///     Revokes refresh_token given in either body or "refreshToken" cookie. Such token can't be used to obtain new ones.
+        /// </remarks>
+        /// <response code="200"> Token succesfully revoked.</response>
+        /// <response code="400">Token is required</response>
+        /// <response code="400">Token not found</response>
         [HttpPost("revoke-token")]
         public IActionResult RevokeToken([FromBody] RevokeTokenRequest model)
         {
@@ -62,34 +86,19 @@ namespace Api.Controllers
             var response = _userService.RevokeToken(token);
 
             if (!response)
-                return NotFound(new { message = "Token not found" });
+                return BadRequest(new { message = "Token not found" });
 
             return Ok(new { message = "Token revoked" });
         }
 
+        /// <summary>
+        ///     Returns all users for dev purposes
+        /// </summary>
         [HttpGet]
         public IActionResult GetAll()
         {
             var users = _userService.GetAll();
             return Ok(users);
-        }
-
-        [HttpGet("{id}")]
-        public IActionResult GetById(int id)
-        {
-            var user = _userService.GetById(id);
-            if (user == null) return NotFound();
-
-            return Ok(user);
-        }
-
-        [HttpGet("{id}/refresh-tokens")]
-        public IActionResult GetRefreshTokens(int id)
-        {
-            var user = _userService.GetById(id);
-            if (user == null) return NotFound();
-
-            return Ok(user.RefreshTokens);
         }
 
         // helper methods

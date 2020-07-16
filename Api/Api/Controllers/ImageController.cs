@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Api.Controllers
 {
     [Authorize]
-    [Produces("text/plain")]
+    [Produces("application/json")]
     [Route("api/image")]
     [ApiController]
     public class ImageController : ControllerBase
@@ -36,7 +36,6 @@ namespace Api.Controllers
         /// <response code="200">Returns guid to the newly created resource</response>
         /// <response code="400"> Returns error message if the file is not valid</response> 
         [HttpPost("process")]
-        [ProducesResponseType(typeof(Guid), StatusCodes.Status200OK)]
         public async Task<IActionResult> Post(IFormFile file)
         {
             if (file == null)
@@ -63,7 +62,7 @@ namespace Api.Controllers
             using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetOutFileName, ext)), FileMode.Create))
                 await file.CopyToAsync(targetStream);
 
-            return Ok(guid.ToString());
+            return Ok(new { guid });
         }
         /// <summary>
         ///     Downloads desired file.
@@ -72,13 +71,15 @@ namespace Api.Controllers
         ///     Returns desired file based on previous requests GUID.
         /// </remarks>
         /// <param name="guid">GUID to the request made previously.</param> 
+        /// <param name="name">Desired name of returned file. Defaults to "graph".</param> 
+        /// <param name="format">Format, in which processed graph is returned. Defaults to GraphML.</param> 
         /// <response code="200"> Returns the file in response body</response>
         /// <response code="400">Returns error message if the file is not found</response>
-        [HttpGet("get")]
-        public IActionResult Get([FromBody] GetImageRequest request)
+        [HttpGet("get/{guid}")]
+        public IActionResult Get(Guid guid, [FromQuery] string name="graph", [FromQuery] string format=".graphml")
         {
             var userId = User.Claims.ToList()[0].Value;
-            DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath,userId.ToString(), request.Guid.ToString()));
+            DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath,userId.ToString(), guid.ToString()));
             if (!dir.Exists)
                 return BadRequest("There is no history request with this guid");
 
@@ -95,7 +96,7 @@ namespace Api.Controllers
 
             var stream = System.IO.File.OpenRead(path);
 
-            return File(stream, "application/octet-stream", String.Concat(request.Name, request.Extension));
+            return File(stream, "application/octet-stream", String.Concat(name, format));
         }
     }
 }
