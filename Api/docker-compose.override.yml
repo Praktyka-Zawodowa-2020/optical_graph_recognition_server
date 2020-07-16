@@ -10,4 +10,6 @@ services:
       - "50613:80"
       - "44371:443"
     volumes:
-      - ../GoogleStorage_VS:/root/.local/share/google-filedatastore/
+      - ../sharedVS/GoogleStorage/:/root/.local/share/google-filedatastore/
+      - ../sharedVS/uploads/:/app/uploads/
+      - ../sharedVS/data/:/app/Data/

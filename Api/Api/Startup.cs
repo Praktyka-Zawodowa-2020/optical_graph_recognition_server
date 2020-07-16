@@ -1,22 +1,18 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using Api.Auth.Helpers;
 using Api.Helpers;
 using Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -77,7 +73,6 @@ namespace Api
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGoogleDriveService, GoogleDriveService>();
             services.AddScoped<GoogleAuthHandler, GoogleAuthHandler>();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -153,21 +148,7 @@ namespace Api
             };
             c.AddSecurityDefinition("jwt_auth", securityDefinition);
 
-            // Make sure swagger UI requires a Bearer token specified
-            OpenApiSecurityScheme securityScheme = new OpenApiSecurityScheme()
-            {
-                Reference = new OpenApiReference()
-                {
-                    Id = "jwt_auth",
-                    Type = ReferenceType.SecurityScheme
-                }
-            };
-            OpenApiSecurityRequirement securityRequirements = new OpenApiSecurityRequirement()
-            {
-                {securityScheme, new string[] { }},
-            };
-
-            c.AddSecurityRequirement(securityRequirements);
+            c.OperationFilter<BasicAuthOperationsFilter>();
         }
     }
 }
