@@ -10,5 +10,6 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ../Data:/app/Data
-      - ../GoogleStorage:/root/.local/share/google-filedatastore/
+      - ../shared/Data:/app/Data
+      - ../shared/GoogleStorage:/root/.local/share/google-filedatastore/
+      - ../shared/uploads:/app/uploads/
