@@ -33,7 +33,7 @@ namespace Api.Controllers
         /// <param name="format">Format, in which processed graph is uploaded. Defaults to raw image.</param> 
         /// <response code="400">Bad request.</response>
         [HttpPost("upload/{guid}")]
-        public IActionResult SendFileToDrive(Guid guid, [FromQuery] string name = "graph", [FromQuery] FileFormat format = FileFormat.Raw)
+        public IActionResult SendFileToDrive(Guid guid, [FromQuery] string name = "graph", [FromQuery] GraphFormat format = GraphFormat.Raw)
         {
             var userId = User.Claims.ToList()[0].Value;
             var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);

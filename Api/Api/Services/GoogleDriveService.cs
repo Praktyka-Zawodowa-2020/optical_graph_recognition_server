@@ -23,7 +23,7 @@ namespace Api.Services
             _context = context;
         }
 
-        public bool CreateFile(User user, Guid guid, string name, FileFormat fileFormat)
+        public bool CreateFile(User user, Guid guid, string name, GraphFormat fileFormat)
         {
             var userCredentials = _googleAuthHandler.GetUserCredentials(user.GoogleId).Result;
             if (userCredentials == null) return false;

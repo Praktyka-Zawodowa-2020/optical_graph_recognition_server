@@ -10,6 +10,6 @@ namespace Api.Services
     public interface IGoogleDriveService
     {
         IList<File> GetAllFiles(User user);
-        bool CreateFile(User user, Guid guid, string name, FileFormat fileFormat);
+        bool CreateFile(User user, Guid guid, string name, GraphFormat fileFormat);
     }
 }

@@ -15,7 +15,7 @@ namespace Api.Services
         private readonly string _targetFilePath = "/app/uploads/";
         private readonly string _targetInFileName = "raw";
 
-        public FileInfo GetImageFileInfo(Guid guid, string userId, FileFormat format)
+        public FileInfo GetImageFileInfo(Guid guid, string userId, GraphFormat format)
         {
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, userId, guid.ToString()));
             if (!dir.Exists)
@@ -26,10 +26,10 @@ namespace Api.Services
             FileInfo file = null;
             foreach (var item in files)
             {
-                if (format == FileFormat.Raw && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
+                if (format == GraphFormat.Raw && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
                     file = item;
 
-                if (format == FileFormat.GraphML && item.Extension == (".graphml"))
+                if (format == GraphFormat.GraphML && item.Extension == (".graphml"))
                     file = item;
             }
             return file;

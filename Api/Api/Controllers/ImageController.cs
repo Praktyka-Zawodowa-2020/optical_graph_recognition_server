@@ -68,7 +68,7 @@ namespace Api.Controllers
         /// <response code="200"> Returns the graph file in response body</response>
         /// <response code="400">Returns error message if the file is not found.</response>
         [HttpGet("get/{guid}")]
-        public IActionResult Get(Guid guid, [FromQuery] string name = "graph", [FromQuery] FileFormat format = FileFormat.Raw)
+        public IActionResult Get(Guid guid, [FromQuery] string name = "graph", [FromQuery] GraphFormat format = GraphFormat.Raw)
         {
             var userId = User.Claims.ToList()[0].Value;
 

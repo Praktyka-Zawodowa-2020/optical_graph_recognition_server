@@ -3,7 +3,7 @@
 namespace Api.Models
 {
     [JsonConverter(typeof(JsonStringEnumConverter))]
-    public enum FileFormat
+    public enum GraphFormat
     {
         Raw,
         GraphML,
