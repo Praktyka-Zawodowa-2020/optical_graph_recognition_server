@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Api.Models;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -7,8 +8,8 @@ namespace Api.Services
 {
     public interface IImageService
     {
-        Task<bool> SaveImage(IFormFile image);
-        Task<bool> ProcessImage(Guid guid);
-        Task<Stream> GetImage(Guid guid);
+        Task<Guid> SaveImage(IFormFile file, string userId);
+        Task<bool> ProcessImage(Guid guid, string userId);
+        FileInfo GetImageFileInfo(Guid guid, string userId, FileFormat format);
     }
 }
