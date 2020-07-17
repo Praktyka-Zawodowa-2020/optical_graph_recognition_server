@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Api.Helpers;
+using Api.Models;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
@@ -25,10 +23,34 @@ namespace Api.Controllers
         }
 
         /// <summary>
-        ///     Lists files from user's google drive.
+        ///     Uploads graph to user's Google Drive.
         /// </summary>
         /// <remarks>
-        ///     For testing purposes.
+        ///     Uploads graph to user's Google Drive based on GUID acquired earlier.
+        /// </remarks>
+        /// <param name="guid">GUID of the graph from previous requests.</param> 
+        /// <param name="name">Desired name of uploaded graph. Defaults to "graph".</param> 
+        /// <param name="format">Format, in which processed graph is uploaded. Defaults to raw image.</param> 
+        /// <response code="400">Bad request.</response>
+        [HttpPost("upload/{guid}")]
+        public IActionResult SendFileToDrive(Guid guid, [FromQuery] string name = "graph", [FromQuery] FileFormat format = FileFormat.Raw)
+        {
+            var userId = User.Claims.ToList()[0].Value;
+            var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);
+
+            var res = _driveService.CreateFile(user, guid, name, format);
+            if (res)
+                return Ok(new { message = "succes" });
+            else
+                return Ok(new { message = "failed" });
+
+        }
+
+        /// <summary>
+        ///     Lists files from user's Google Drive.
+        /// </summary>
+        /// <remarks>
+        ///     TEST PURPOSE.
         /// </remarks>
         [HttpGet("getAllFiles")]
         public IActionResult GetFiles()
@@ -36,8 +58,7 @@ namespace Api.Controllers
             var userId = User.Claims.ToList()[0].Value;
             var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);
 
-            var files = _driveService.GetFiles(user.GoogleId);
-
+            var files = _driveService.GetAllFiles(user);
 
             return Ok(files);
         }

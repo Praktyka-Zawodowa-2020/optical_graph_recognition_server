@@ -1,12 +1,15 @@
-﻿using System;
+﻿using Api.Entities;
+using Api.Models;
+using Google.Apis.Drive.v3.Data;
+using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using User = Api.Entities.User;
 
 namespace Api.Services
 {
     public interface IGoogleDriveService
     {
-        IList<Google.Apis.Drive.v3.Data.File> GetFiles(string userGoogleId);
+        IList<File> GetAllFiles(User user);
+        bool CreateFile(User user, Guid guid, string name, FileFormat fileFormat);
     }
 }
