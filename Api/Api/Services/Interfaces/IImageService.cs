@@ -10,6 +10,6 @@ namespace Api.Services
     {
         Task<Guid> SaveImage(IFormFile file, string userId);
         Task<bool> ProcessImage(Guid guid, string userId);
-        FileInfo GetImageFileInfo(Guid guid, string userId, FileFormat format);
+        FileInfo GetImageFileInfo(Guid guid, string userId, GraphFormat format);
     }
 }

@@ -29,8 +29,11 @@ namespace Api.Controllers
         /// <summary>
         ///     Uploads an image file to the server.
         /// </summary>
+        /// <remarks>
+        ///     Uploads an image file and then creates a graph entity in the server, by processing an image with python script. 
+        ///     Returns a Guid, which can be used later to identify each graph source. 
+        /// </remarks>
         /// <param name="file">File must be an image. Supported formats are: jpeg, jpg, png and bmp.</param> 
-        /// <returns>A guid to newly created source in the server, which will be used for later requests.</returns>
         /// <response code="200">Returns guid to the newly created resource</response>
         /// <response code="400"> Returns error message if the file is not valid</response> 
         [HttpPost("process")]
@@ -54,18 +57,18 @@ namespace Api.Controllers
             return Ok(new { guid });
         }
         /// <summary>
-        ///     Downloads desired file.
+        ///     Downloads desired graph.
         /// </summary>
         /// <remarks>
-        ///     Returns desired file based on previous requests GUID.
+        ///     Returns desired graph based on previous request's GUID.
         /// </remarks>
-        /// <param name="guid">GUID to the request made previously.</param> 
-        /// <param name="name">Desired name of returned file. Defaults to "graph".</param> 
-        /// <param name="format">Format, in which processed graph is returned. Defaults to raw image.</param> 
-        /// <response code="200"> Returns the file in response body</response>
+        /// <param name="guid">GUID to the created graph.</param> 
+        /// <param name="name">Desired name of returned graph. Defaults to "graph".</param> 
+        /// <param name="format">Format, in which processed graph file is returned. Defaults to raw image.</param> 
+        /// <response code="200"> Returns the graph file in response body</response>
         /// <response code="400">Returns error message if the file is not found.</response>
         [HttpGet("get/{guid}")]
-        public IActionResult Get(Guid guid, [FromQuery] string name = "graph", [FromQuery] FileFormat format = FileFormat.Raw)
+        public IActionResult Get(Guid guid, [FromQuery] string name = "graph", [FromQuery] GraphFormat format = GraphFormat.Raw)
         {
             var userId = User.Claims.ToList()[0].Value;
 
