@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Api.Models;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -89,16 +86,6 @@ namespace Api.Controllers
                 return BadRequest(new { message = "Token not found" });
 
             return Ok(new { message = "Token revoked" });
-        }
-
-        /// <summary>
-        ///     Returns all users for dev purposes
-        /// </summary>
-        [HttpGet]
-        public IActionResult GetAll()
-        {
-            var users = _userService.GetAll();
-            return Ok(users);
         }
 
         // helper methods

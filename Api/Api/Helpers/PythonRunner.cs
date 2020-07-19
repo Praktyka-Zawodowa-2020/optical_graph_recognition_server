@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Api.Helpers
 {
-    public class RunCmd
+    public class PythonRunner
     {
         public string Run(string cmd, string args)
         {

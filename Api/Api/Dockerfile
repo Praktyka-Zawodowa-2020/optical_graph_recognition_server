@@ -15,7 +15,9 @@ FROM build AS publish
 RUN dotnet publish "Api.csproj" -c Release -o /app/publish
 
 FROM base AS final
+RUN apt-get install python 
 WORKDIR /app
 COPY --from=publish /app/publish .
 COPY --from=build /src/Api/Certs Certs/ 
+COPY --from=build /src/Api/Scripts scripts/ 
 ENTRYPOINT ["dotnet", "Api.dll"]
