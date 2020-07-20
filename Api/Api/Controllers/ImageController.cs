@@ -38,7 +38,7 @@ namespace Api.Controllers
         public async Task<IActionResult> Post(IFormFile file)
         {
             if (file == null)
-                return BadRequest(new { message = "Please enter image file specyfying content-type as multipart/form-data" });
+                return BadRequest(new { message = "No file provided. Please enter image file specyfying content-type as multipart/form-data with parameter name \"file\"" });
             if (file.Length == 0)
                 return BadRequest(new { message = "Empty file" });
 

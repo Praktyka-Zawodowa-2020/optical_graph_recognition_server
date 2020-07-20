@@ -40,7 +40,7 @@ namespace Api.Services
                 if (format == GraphFormat.GraphML && item.Extension == (".graphml"))
                     file = item;
                 else
-                if (format == GraphFormat.GraphML && item.Extension == (".g6"))
+                if (format == GraphFormat.Graph6 && item.Extension == (".g6"))
                     file = item;
             }
             return file;
@@ -48,7 +48,6 @@ namespace Api.Services
 
         public bool ProcessImage(Guid guid, string userId)
         {
-
             var image = GetImageFileInfo(guid, userId, GraphFormat.Raw);
             var script = _appSettings.StoragePaths.ScriptFullPath;
             var param = "-p " + image.FullName;

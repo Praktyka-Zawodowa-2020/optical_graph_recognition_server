@@ -4,6 +4,7 @@ using Google.Apis.Auth.OAuth2;
 using Google.Apis.Auth.OAuth2.Flows;
 using Google.Apis.Auth.OAuth2.Responses;
 using Google.Apis.Util.Store;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -15,9 +16,12 @@ namespace Api.Helpers
     public class GoogleAuthHandler
     {
         private readonly AppSettings _appSettings;
-        public GoogleAuthHandler(IOptions<AppSettings> appSettings)
+        private readonly ILogger<GoogleAuthHandler> _logger;
+
+        public GoogleAuthHandler(IOptions<AppSettings> appSettings, ILogger<GoogleAuthHandler> logger)
         {
             _appSettings = appSettings.Value;
+            _logger = logger;
         }
 
         public User Authenticate(string idToken, string authCode)
@@ -55,6 +59,7 @@ namespace Api.Helpers
             }
             catch (Exception e)
             {
+                _logger.LogError(e.Message);
                 return null;
             }
         }
@@ -91,6 +96,7 @@ namespace Api.Helpers
                 }
                 catch (Exception e)
                 {
+                    _logger.LogError(e.Message);
                     return null;
                 };
             }
