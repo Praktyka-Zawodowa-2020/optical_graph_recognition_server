@@ -58,7 +58,7 @@ namespace Api.Controllers
             if (response == null)
                 return Unauthorized(new { message = "Invalid token" });
 
-            setTokenCookie(response.RefreshToken);
+            //setTokenCookie(response.RefreshToken);
 
             return Ok(response);
         }
