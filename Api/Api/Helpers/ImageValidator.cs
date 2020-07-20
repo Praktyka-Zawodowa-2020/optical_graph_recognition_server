@@ -8,7 +8,6 @@ namespace Api.Services
 {
     public class ImageValidator
     {
-        private static readonly int maxBytes = 8;
         private static readonly Dictionary<byte[], string> _fileSignatures = new Dictionary<byte[], string>(new StructuralEqualityComparer())
         {
             { new byte[] { 0xFF, 0xD8, 0xFF, 0xDB }, ".jpeg" },
@@ -24,14 +23,20 @@ namespace Api.Services
         {
             using (var reader = new BinaryReader(stream))
             {
-                var headerBytes = reader.ReadBytes(maxBytes);
+                int[] sygSizes = { 2, 4, 8 };
+                var headerBytes = reader.ReadBytes(sygSizes.Max());
+                foreach (var size in sygSizes)
+                {
+                    var bytes = headerBytes.Take(size).ToArray();
 
-                if (!_fileSignatures.ContainsKey(headerBytes))
-                    return String.Empty;
+                    if (!_fileSignatures.ContainsKey(bytes))
+                        continue;
 
-                var extension = _fileSignatures[headerBytes];
+                    var extension = _fileSignatures[bytes];
 
-                return extension;
+                    return extension;
+                }
+                return String.Empty;
             }
         }
 
