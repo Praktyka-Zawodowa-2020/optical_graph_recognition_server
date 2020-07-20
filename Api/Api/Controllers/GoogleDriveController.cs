@@ -45,22 +45,5 @@ namespace Api.Controllers
                 return Ok(new { message = "failed" });
 
         }
-
-        /// <summary>
-        ///     Lists files from user's Google Drive.
-        /// </summary>
-        /// <remarks>
-        ///     TEST PURPOSE.
-        /// </remarks>
-        [HttpGet("getAllFiles")]
-        public IActionResult GetFiles()
-        {
-            var userId = User.Claims.ToList()[0].Value;
-            var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);
-
-            var files = _driveService.GetAllFiles(user);
-
-            return Ok(files);
-        }
     }
 }

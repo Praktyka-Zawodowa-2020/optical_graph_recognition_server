@@ -45,7 +45,7 @@ namespace Api.Services
             // Get the media upload request object.
             var fileToCreate = new File
             {
-                Name = name,
+                Name = name+file.Extension,
                 Parents = new List<string>() { folderId }
             };
 

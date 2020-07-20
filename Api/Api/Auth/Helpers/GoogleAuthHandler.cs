@@ -41,7 +41,7 @@ namespace Api.Helpers
             {
                 var validPayload = await GoogleJsonWebSignature.ValidateAsync(idToken);
 
-                var clientId = _appSettings.ClientId;
+                var clientId = _appSettings.Secrets.ClientId;
                 var aud = validPayload.Audience;
                 if (!clientId.Equals(aud)) return null;
 
@@ -62,7 +62,7 @@ namespace Api.Helpers
         private async Task<UserCredential> ObtainApiCredentails(string authorizationCode, string userId)
         {
             // authorization code is sent by the client (web browser)
-            string dataStoreFolder = _appSettings.StorageFile;
+            string dataStoreFolder = _appSettings.StoragePaths.GoogleStorageDirectory;
 
             // create authorization code flow with clientSecrets
             GoogleAuthorizationCodeFlow authorizationCodeFlow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
@@ -70,8 +70,8 @@ namespace Api.Helpers
                 DataStore = new FileDataStore(dataStoreFolder),
                 ClientSecrets = new ClientSecrets()
                 {
-                    ClientId = _appSettings.ClientId,
-                    ClientSecret = _appSettings.ClientSecret
+                    ClientId = _appSettings.Secrets.ClientId,
+                    ClientSecret = _appSettings.Secrets.ClientSecret
                 }
             });
 
@@ -86,7 +86,7 @@ namespace Api.Helpers
                     tokenResponse = await authorizationCodeFlow.ExchangeCodeForTokenAsync(
                       userId, // user for tracking the userId on our backend system
                       authorizationCode,
-                      _appSettings.RedirectUri, // redirect_uri can not be empty. Must be one of the redirects url listed in your project in the api console
+                      _appSettings.Secrets.RedirectUri, // redirect_uri can not be empty. Must be one of the redirects url listed in your project in the api console
                       CancellationToken.None);
                 }
                 catch (Exception e)
@@ -104,7 +104,7 @@ namespace Api.Helpers
         }
         public async Task<UserCredential> GetUserCredentials(string userId)
         {
-            string dataStoreFolder = _appSettings.StorageFile;
+            string dataStoreFolder = _appSettings.StoragePaths.GoogleStorageDirectory;
 
             // create authorization code flow with clientSecrets
             GoogleAuthorizationCodeFlow authorizationCodeFlow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
@@ -112,8 +112,8 @@ namespace Api.Helpers
                 DataStore = new FileDataStore(dataStoreFolder),
                 ClientSecrets = new ClientSecrets()
                 {
-                    ClientId = _appSettings.ClientId,
-                    ClientSecret = _appSettings.ClientSecret
+                    ClientId = _appSettings.Secrets.ClientId,
+                    ClientSecret = _appSettings.Secrets.ClientSecret
                 }
             });
 
