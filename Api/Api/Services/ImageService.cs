@@ -57,7 +57,7 @@ namespace Api.Services
             return true;
         }
 
-        public async Task<Guid> SaveImage(IFormFile file, string userId)
+        public async Task<Guid> SaveImage(IFormFile file, string validExtension, string userId)
         {
             Guid guid = Guid.NewGuid();
             var path = Path.Combine(_targetFilePath, userId, guid.ToString());
@@ -65,9 +65,7 @@ namespace Api.Services
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
 
-            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-
-            using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetInFileName, ext)), FileMode.Create))
+            using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetInFileName, validExtension)), FileMode.Create))
                 await file.CopyToAsync(targetStream);
 
             return guid;
