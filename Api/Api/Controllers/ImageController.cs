@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Api.Models;
@@ -16,11 +15,10 @@ namespace Api.Controllers
     [ApiController]
     public class ImageController : ControllerBase
     {
-
-        private readonly IImageValidator _imageValidator;
+        private readonly ImageValidator _imageValidator;
         private readonly IImageService _imageService;
 
-        public ImageController(IImageValidator imageValidator, IImageService imageService)
+        public ImageController(ImageValidator imageValidator, IImageService imageService)
         {
             _imageValidator = imageValidator;
             _imageService = imageService;
@@ -44,13 +42,13 @@ namespace Api.Controllers
             if (file.Length == 0)
                 return BadRequest(new { message = "Empty file" });
 
-            var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-            if (!_imageValidator.IsValid(file.OpenReadStream(), ext))
-                return BadRequest(new { message = "Wrong file format" });
-
+            string validExtension = _imageValidator.GetValidExtension(file.OpenReadStream());
+            if (validExtension.Equals(String.Empty))
+                return BadRequest(new { message = "Wrong file signature" });
+                
             var userId = User.Claims.ToList()[0].Value;
 
-            var guid = await _imageService.SaveImage(file, userId);
+            var guid = await _imageService.SaveImage(file, validExtension, userId);
 
             var result = _imageService.ProcessImage(guid, userId);
             if (result)
@@ -58,6 +56,7 @@ namespace Api.Controllers
             else
                 return BadRequest(new { message = "Processing image gone wrong" });
         }
+
         /// <summary>
         ///     Downloads desired graph.
         /// </summary>

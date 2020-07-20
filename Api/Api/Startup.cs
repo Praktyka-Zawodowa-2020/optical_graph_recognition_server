@@ -69,7 +69,7 @@ namespace Api
             });
 
             // configure DI for application services
-            services.AddScoped<IImageValidator, ImageValidator>();
+            services.AddScoped<ImageValidator, ImageValidator>();
             services.AddScoped<IUserService, UserService>();
             services.AddSingleton<IImageService, ImageService>();
             services.AddScoped<IGoogleDriveService, GoogleDriveService>();
