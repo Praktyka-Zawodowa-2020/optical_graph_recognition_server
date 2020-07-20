@@ -52,9 +52,11 @@ namespace Api.Controllers
 
             var guid = await _imageService.SaveImage(file, userId);
 
-            var result = await _imageService.ProcessImage(guid, userId);
-
-            return Ok(new { guid });
+            var result = _imageService.ProcessImage(guid, userId);
+            if (result)
+                return Ok(new { guid });
+            else
+                return BadRequest(new { message = "Processing image gone wrong" });
         }
         /// <summary>
         ///     Downloads desired graph.

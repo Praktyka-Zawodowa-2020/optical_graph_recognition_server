@@ -41,7 +41,7 @@ namespace Api
 
             // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var key = Encoding.ASCII.GetBytes(appSettings.Secrets.Secret);
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -71,7 +71,7 @@ namespace Api
             // configure DI for application services
             services.AddScoped<IImageValidator, ImageValidator>();
             services.AddScoped<IUserService, UserService>();
-            services.AddScoped<IImageService, ImageService>();
+            services.AddSingleton<IImageService, ImageService>();
             services.AddScoped<IGoogleDriveService, GoogleDriveService>();
             services.AddScoped<GoogleAuthHandler, GoogleAuthHandler>();
         }
