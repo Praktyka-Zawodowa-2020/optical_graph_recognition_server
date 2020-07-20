@@ -25,7 +25,7 @@ namespace Api.Controllers
         /// <remarks>
         ///     Signs ins user based on Google Codes acquired by signing in to Google in Android Client.
         /// </remarks>
-        /// <response code="200"> Returns access_token in response body used to authorize this API and refresh_token in HttpOnly cookie, that needs to be stored for later - can be used to obtain new access_token if one expires.</response>
+        /// <response code="200"> Returns access token in response body used to authorize this API along with refresh token, that needs to be stored for later - can be used to obtain new access token if one expires.</response>
         /// <response code="400">Invalid authCode.</response>
         [AllowAnonymous]
         [HttpPost("authenticate")]
@@ -41,12 +41,12 @@ namespace Api.Controllers
             return Ok(response);
         }
         /// <summary>
-        ///     Refreshes access_token.
+        ///     Refreshes access token and revokes used refresh token.
         /// </summary>
         /// <remarks>
-        ///     Refreshes access_token based on refresh_token provided in "refreshToken" cookie. Each refresh_token can be used only once.
+        ///     Refreshes access token based on refresh token provided in "refreshToken" cookie. Each refresh token can be used only once.
         /// </remarks>
-        /// <response code="200"> Returns refreshed access_token along with a new refresh token.</response>
+        /// <response code="200"> Returns refreshed access token along with a new refresh token.</response>
         /// <response code="400">Invalid token.</response>
         [AllowAnonymous]
         [HttpPost("refresh-token")]
@@ -63,10 +63,10 @@ namespace Api.Controllers
             return Ok(response);
         }
         /// <summary>
-        ///     Makes specific refresh_token not valid anymore.
+        ///     Makes specific refresh token not valid anymore.
         /// </summary>
         /// <remarks>
-        ///     Revokes refresh_token given in either body or "refreshToken" cookie. Such token can't be used to obtain new ones.
+        ///     Revokes refresh token given in either body or "refreshToken" cookie. Such token can't be used to obtain new ones.
         /// </remarks>
         /// <response code="200"> Token succesfully revoked.</response>
         /// <response code="400">Token is required</response>
