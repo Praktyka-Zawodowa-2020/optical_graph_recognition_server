@@ -12,5 +12,4 @@ services:
     volumes:
       - ../sharedVS/GoogleStorage/:/root/.local/share/google-filedatastore/
       - ../sharedVS/uploads/:/app/uploads/
-      - ../sharedVS/scripts/:/app/scripts/
       - ../sharedVS/data/:/app/Data/

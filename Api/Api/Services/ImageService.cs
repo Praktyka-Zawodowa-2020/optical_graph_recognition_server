@@ -5,6 +5,7 @@ using Api.Helpers;
 using Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Api.Services
 {
@@ -12,10 +13,10 @@ namespace Api.Services
     {
         private readonly ILogger _logger;
         private readonly AppSettings _appSettings;
-        public ImageService(AppSettings appSettings, ILogger logger)
+        public ImageService(IOptions<AppSettings> appSettings, ILogger<ImageService> logger)
         {
             _logger = logger;
-            _appSettings = appSettings;
+            _appSettings = appSettings.Value;
             _targetFilePath = _appSettings.StoragePaths.UploadsDirectory;
         }
 
@@ -35,8 +36,11 @@ namespace Api.Services
             {
                 if (format == GraphFormat.Raw && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
                     file = item;
-
+                else
                 if (format == GraphFormat.GraphML && item.Extension == (".graphml"))
+                    file = item;
+                else
+                if (format == GraphFormat.GraphML && item.Extension == (".g6"))
                     file = item;
             }
             return file;
@@ -47,7 +51,7 @@ namespace Api.Services
 
             var image = GetImageFileInfo(guid, userId, GraphFormat.Raw);
             var script = _appSettings.StoragePaths.ScriptFullPath;
-            var param = image.FullName;
+            var param = "-p " + image.FullName;
             var result = new PythonRunner().Run(script, param);
             _logger.LogInformation("Processing image result:", result);
             return true;

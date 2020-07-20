@@ -62,7 +62,7 @@ namespace Api.Helpers
         private async Task<UserCredential> ObtainApiCredentails(string authorizationCode, string userId)
         {
             // authorization code is sent by the client (web browser)
-            string dataStoreFolder = _appSettings.Secrets.StorageFile;
+            string dataStoreFolder = _appSettings.StoragePaths.GoogleStorageDirectory;
 
             // create authorization code flow with clientSecrets
             GoogleAuthorizationCodeFlow authorizationCodeFlow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
@@ -104,7 +104,7 @@ namespace Api.Helpers
         }
         public async Task<UserCredential> GetUserCredentials(string userId)
         {
-            string dataStoreFolder = _appSettings.Secrets.StorageFile;
+            string dataStoreFolder = _appSettings.StoragePaths.GoogleStorageDirectory;
 
             // create authorization code flow with clientSecrets
             GoogleAuthorizationCodeFlow authorizationCodeFlow = new GoogleAuthorizationCodeFlow(new GoogleAuthorizationCodeFlow.Initializer
