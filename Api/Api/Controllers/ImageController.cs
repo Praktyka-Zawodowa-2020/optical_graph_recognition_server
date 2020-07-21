@@ -32,13 +32,19 @@ namespace Api.Controllers
         ///     Returns a Guid, which can be used later to identify each graph source. 
         /// </remarks>
         /// <param name="file">File must be an image. Supported formats are: jpeg, jpg, png and bmp.</param> 
+        /// <param name="mode">
+        /// <p>Mode, in which image file is processed by script. Defaults to GRID</p>
+        /// <br>GRID_BG - Hand drawn on grid/lined piece of paper (grid/lined notebook etc.)</br>
+        /// <br>CLEAN_BG - Hand drawn on empty uniform color background (on board, empty piece of paper, editor (paint)</br>
+        /// <br>PRINTED - Printed (e.g. from paper, publication, book...)</br>
+        /// </param> 
         /// <response code="200">Returns guid to the newly created resource</response>
         /// <response code="400"> Returns error message if the file is not valid</response> 
         [HttpPost("process")]
-        public async Task<IActionResult> Post(IFormFile file)
+        public async Task<IActionResult> Post(IFormFile file, [FromQuery] ProcessMode mode = ProcessMode.GRID_BG)
         {
             if (file == null)
-                return BadRequest(new { message = "No file provided. Please enter image file specyfying content-type as multipart/form-data with parameter name \"file\"" });
+                return BadRequest(new { message = "No file provided" });
             if (file.Length == 0)
                 return BadRequest(new { message = "Empty file" });
 
@@ -50,7 +56,7 @@ namespace Api.Controllers
 
             var guid = await _imageService.SaveImage(file, validExtension, userId);
 
-            var result = _imageService.ProcessImage(guid, userId);
+            var result = _imageService.ProcessImage(guid, userId, mode);
             if (result)
                 return Ok(new { guid });
             else
