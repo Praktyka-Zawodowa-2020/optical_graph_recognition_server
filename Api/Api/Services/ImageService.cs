@@ -46,11 +46,11 @@ namespace Api.Services
             return file;
         }
 
-        public bool ProcessImage(Guid guid, string userId)
+        public bool ProcessImage(Guid guid, string userId, ProcessMode mode)
         {
             var image = GetImageFileInfo(guid, userId, GraphFormat.Raw);
             var script = _appSettings.StoragePaths.ScriptFullPath;
-            var param = "-p " + image.FullName;
+            var param = "-p " + image.FullName;// + " -b " + (int) mode;
             var result = new PythonRunner().Run(script, param);
             _logger.LogInformation("Processing image result:", result);
             return true;
