@@ -28,17 +28,12 @@ namespace Api.Controllers
         ///     Uploads an image file to the server.
         /// </summary>
         /// <remarks>
-        ///     Uploads an image file and then creates a graph entity in the server, by processing an image with python script. 
-        ///     Returns a Guid, which can be used later to identify each graph source. 
+        ///     Uploads an image file and then creates a graph entity in the server, by processing an image with a python script. 
+        ///     Returns a GUID, which can be used later to identify each graph source. 
         /// </remarks>
         /// <param name="file">File must be an image. Supported formats are: jpeg, jpg, png and bmp.</param> 
-        /// <param name="mode">
-        /// <p>Mode, in which image file is processed by script. Defaults to GRID</p>
-        /// <br>GRID_BG - Hand drawn on grid/lined piece of paper (grid/lined notebook etc.)</br>
-        /// <br>CLEAN_BG - Hand drawn on empty uniform color background (on board, empty piece of paper, editor (paint)</br>
-        /// <br>PRINTED - Printed (e.g. from paper, publication, book...)</br>
-        /// </param> 
-        /// <response code="200">Returns guid to the newly created resource</response>
+        /// <param name="mode">Mode, in which an image file is processed by the script. Defaults to GRID</param> 
+        /// <response code="200">Returns a GUID to the newly created resource</response>
         /// <response code="400"> Returns error message if the file is not valid</response> 
         [HttpPost("process")]
         public async Task<IActionResult> Post(IFormFile file, [FromQuery] ProcessMode mode = ProcessMode.GRID_BG)
@@ -51,7 +46,7 @@ namespace Api.Controllers
             string validExtension = _imageValidator.GetValidExtension(file.OpenReadStream());
             if (validExtension.Equals(String.Empty))
                 return BadRequest(new { message = "Wrong file signature" });
-                
+
             var userId = User.Claims.ToList()[0].Value;
 
             var guid = await _imageService.SaveImage(file, validExtension, userId);
@@ -64,18 +59,18 @@ namespace Api.Controllers
         }
 
         /// <summary>
-        ///     Downloads desired graph.
+        ///     Downloads the desired graph.
         /// </summary>
         /// <remarks>
-        ///     Returns desired graph based on previous request's GUID.
+        ///     Returns the desired graph based on a previous request's GUID.
         /// </remarks>
-        /// <param name="guid">GUID to the created graph.</param> 
-        /// <param name="name">Desired name of returned graph. Defaults to "graph".</param> 
-        /// <param name="format">Format, in which processed graph file is returned. Defaults to raw image.</param> 
-        /// <response code="200"> Returns the graph file in response body</response>
+        /// <param name="guid">GUID of the created graph.</param> 
+        /// <param name="name">Desired name of the returned graph. Defaults to "graph".</param> 
+        /// <param name="format">Format, in which the processed graph file is returned. Defaults to raw image.</param> 
+        /// <response code="200"> Returns the graph file in the response body</response>
         /// <response code="400">Returns error message if the file is not found.</response>
         [HttpGet("get/{guid}")]
-        public IActionResult Get(Guid guid, [FromQuery] string name = "graph", [FromQuery] GraphFormat format = GraphFormat.Raw)
+        public IActionResult Get(Guid guid, [FromQuery] string name = "graph", [FromQuery] GraphFormat format = GraphFormat.RawImage)
         {
             var userId = User.Claims.ToList()[0].Value;
 

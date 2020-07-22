@@ -5,7 +5,7 @@ namespace Api.Models
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public enum GraphFormat
     {
-        Raw,
+        RawImage,
         GraphML,
         Graph6
     }
