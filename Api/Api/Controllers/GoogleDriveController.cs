@@ -26,14 +26,14 @@ namespace Api.Controllers
         ///     Uploads graph to user's Google Drive.
         /// </summary>
         /// <remarks>
-        ///     Uploads graph to user's Google Drive based on GUID acquired earlier.
+        ///     Uploads the graph to user's Google Drive based on a GUID acquired earlier.
         /// </remarks>
-        /// <param name="guid">GUID of the graph from previous requests.</param> 
-        /// <param name="name">Desired name of uploaded graph. Defaults to "graph".</param> 
-        /// <param name="format">Format, in which processed graph is uploaded. Defaults to raw image.</param> 
+        /// <param name="guid">GUID of the graph from the previous requests.</param> 
+        /// <param name="name">Desired name of the uploaded graph. Defaults to "graph".</param> 
+        /// <param name="format">Format, in which the processed graph is uploaded. Defaults to raw image.</param> 
         /// <response code="400">Bad request.</response>
         [HttpPost("upload/{guid}")]
-        public IActionResult SendFileToDrive(Guid guid, [FromQuery] string name = "graph", [FromQuery] GraphFormat format = GraphFormat.Raw)
+        public IActionResult SendFileToDrive(Guid guid, [FromQuery] string name = "graph", [FromQuery] GraphFormat format = GraphFormat.RawImage)
         {
             var userId = User.Claims.ToList()[0].Value;
             var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);

@@ -20,13 +20,13 @@ namespace Api.Controllers
         }
 
         /// <summary>
-        ///     Sign-ins user.
+        ///     Signs-in user using Google APIs.
         /// </summary>
         /// <remarks>
-        ///     Signs ins user based on Google Codes acquired by signing in to Google in Android Client.
+        ///     Signs-in user based on Google tokens acquired by requesting the Google APIs in Client Application. To do so, check "Google Implicit Flow".
         /// </remarks>
-        /// <response code="200"> Returns access token in response body used to authorize this API along with refresh token, that needs to be stored for later - can be used to obtain new access token if one expires.</response>
-        /// <response code="400">Invalid authCode.</response>
+        /// <response code="200"> Returns an access token (valid for 15 min) in a response body used to authorize this API along with a refresh token (valid for 1 week), that can be stored for later - used to obtain a new access token if one expires.</response>
+        /// <response code="400">Invalid token(s).</response>
         [AllowAnonymous]
         [HttpPost("authenticate")]
         public IActionResult Authenticate([FromBody] AuthenticateRequest model)
@@ -36,46 +36,43 @@ namespace Api.Controllers
             if (response == null)
                 return BadRequest(new { message = "Invalid google token." });
 
-            setTokenCookie(response.RefreshToken);
-
             return Ok(response);
         }
+
         /// <summary>
         ///     Refreshes access token and revokes used refresh token.
         /// </summary>
         /// <remarks>
-        ///     Refreshes access token based on refresh token provided in "refreshToken" cookie. Each refresh token can be used only once.
+        ///     Generates a new access token based on a refresh token. Each refresh token can be used only once, since previous one gets invalidated.
         /// </remarks>
-        /// <response code="200"> Returns refreshed access token along with a new refresh token.</response>
+        /// <response code="200"> Returns a new valid access token along with a new refresh token.</response>
         /// <response code="400">Invalid token.</response>
         [AllowAnonymous]
         [HttpPost("refresh-token")]
-        public IActionResult RefreshToken()
+        public IActionResult RefreshToken([FromBody] TokenRequest refreshToken)
         {
-            var refreshToken = Request.Cookies["refreshToken"];
-            var response = _userService.RefreshToken(refreshToken);
+            var response = _userService.RefreshToken(refreshToken.Token);
 
             if (response == null)
                 return BadRequest(new { message = "Invalid token" });
 
-            //setTokenCookie(response.RefreshToken);
-
             return Ok(response);
         }
+
         /// <summary>
-        ///     Makes specific refresh token not valid anymore.
+        ///     Makes a specific refresh token not valid anymore.
         /// </summary>
         /// <remarks>
-        ///     Revokes refresh token given in either body or "refreshToken" cookie. Such token can't be used to obtain new ones.
+        ///     Invalidates a given refresh token. Such token can't be used to obtain new ones.
         /// </remarks>
-        /// <response code="200"> Token succesfully revoked.</response>
+        /// <response code="200">Token succesfully revoked.</response>
         /// <response code="400">Token is required</response>
         /// <response code="400">Token not found</response>
         [HttpPost("revoke-token")]
-        public IActionResult RevokeToken([FromBody] RevokeTokenRequest model)
+        public IActionResult RevokeToken([FromBody] TokenRequest model)
         {
             // accept token from request body or cookie
-            var token = model.Token ?? Request.Cookies["refreshToken"];
+            var token = model.Token;
 
             if (string.IsNullOrEmpty(token))
                 return BadRequest(new { message = "Token is required" });

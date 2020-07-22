@@ -34,7 +34,7 @@ namespace Api.Services
             FileInfo file = null;
             foreach (var item in files)
             {
-                if (format == GraphFormat.Raw && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
+                if (format == GraphFormat.RawImage && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
                     file = item;
                 else
                 if (format == GraphFormat.GraphML && item.Extension == (".graphml"))
@@ -48,7 +48,7 @@ namespace Api.Services
 
         public bool ProcessImage(Guid guid, string userId, ProcessMode mode)
         {
-            var image = GetImageFileInfo(guid, userId, GraphFormat.Raw);
+            var image = GetImageFileInfo(guid, userId, GraphFormat.RawImage);
             var script = _appSettings.StoragePaths.ScriptFullPath;
             var param = "-p " + image.FullName;// + " -b " + (int) mode;
             var result = new PythonRunner().Run(script, param);

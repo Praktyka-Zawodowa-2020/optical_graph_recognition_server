@@ -2,7 +2,7 @@
 
 namespace Api.Models
 {
-    public class RevokeTokenRequest
+    public class TokenRequest
     {
         [Required]
         public string Token { get; set; }
