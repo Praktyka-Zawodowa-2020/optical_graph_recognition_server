@@ -140,7 +140,8 @@ namespace Api.Services
 
         public IEnumerable<GraphEntity> GetRecent(int amount)
         {
-            throw new NotImplementedException();
+            var entities = _dataContext.GraphEntities.Where(e => e.IsPublic).OrderBy(e => e.CreatedAt).Take(amount).ToList();
+            return entities;
         }
     }
 }

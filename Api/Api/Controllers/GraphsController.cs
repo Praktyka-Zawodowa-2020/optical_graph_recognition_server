@@ -30,7 +30,7 @@ namespace Api.Controllers
         ///     Uploads an image file to the server.
         /// </summary>
         /// <remarks>
-        ///     Uploads an image file and creates a graph entity (not processed or anything) at the server's storage. 
+        ///     Uploads an image file and creates a graph entity (not processed or anything) in the server's storage. 
         ///     Returns a GUID, which can be used later to identify each graph source. 
         /// </remarks>
         /// <response code="200">Returns a GUID to the newly created resource</response>
@@ -106,7 +106,6 @@ namespace Api.Controllers
 
             var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
-
             return File(stream, "application/octet-stream", graphFile.Name);
         }
 
@@ -122,8 +121,6 @@ namespace Api.Controllers
         public IActionResult Put([FromRoute] Guid guid, IFormFile File)
         {
             var userId = GetUserId();
-
-            
 
             return Ok();
         }
@@ -191,7 +188,7 @@ namespace Api.Controllers
         }
 
         /// <summary>
-        /// - - - TODO - - - # Gets recently created public graph entities.
+        /// Gets recently created public graph entities.
         /// </summary>
         /// <remarks>
         /// Returns a list containing details of recently uploaded graph entities, that were ever made to public.
