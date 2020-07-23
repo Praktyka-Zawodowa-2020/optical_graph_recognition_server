@@ -45,7 +45,7 @@ namespace Api.Services
             // Get the media upload request object.
             var fileToCreate = new File
             {
-                Name = String.Concat(graphFile.Name, graphFile.File.Extension),
+                Name = graphFile.Name,
                 Parents = new List<string>() { folderId }
             };
 

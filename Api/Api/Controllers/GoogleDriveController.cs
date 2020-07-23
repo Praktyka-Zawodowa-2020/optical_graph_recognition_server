@@ -5,6 +5,7 @@ using Api.Models;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers
 {
@@ -32,10 +33,20 @@ namespace Api.Controllers
         /// <param name="format">Format, in which the graph file is uploaded. Defaults to raw image.</param> 
         /// <response code="400">Bad request.</response>
         [HttpPost("upload/{guid}")]
-        public IActionResult SendFileToDrive(Guid guid, [FromQuery] GraphFormat format = GraphFormat.RawImage)
+        public async System.Threading.Tasks.Task<IActionResult> SendFileToDriveAsync(Guid guid, [FromQuery] GraphFormat format = GraphFormat.RawImage)
         {
             var userId = User.Claims.ToList()[0].Value;
             var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);
+
+            var entity = await _dataContext.GraphEntities
+                .Include(g => g.Owner)
+                .SingleOrDefaultAsync(g => g.GUID.Equals(guid));
+
+            if (entity.Owner != null && !entity.IsPublic)
+            {
+                if (!entity.Owner.Id.Equals(userId))
+                    return BadRequest(new ErrorMessageResponse("No permission to the graph entity"));
+            }
 
             var res = _driveService.CreateFile(user, guid, format);
             if (res)
