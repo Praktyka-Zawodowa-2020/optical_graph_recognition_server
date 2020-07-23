@@ -14,16 +14,16 @@ namespace Api.Services
     public class GoogleDriveService : IGoogleDriveService
     {
         private readonly GoogleAuthHandler _googleAuthHandler;
-        private readonly IImageService _imageService;
+        private readonly IGraphService _imageService;
         private readonly DataContext _context;
-        public GoogleDriveService(DataContext context, GoogleAuthHandler googleAuthHandler, IImageService imageService)
+        public GoogleDriveService(DataContext context, GoogleAuthHandler googleAuthHandler, IGraphService imageService)
         {
             _googleAuthHandler = googleAuthHandler;
             _imageService = imageService;
             _context = context;
         }
 
-        public bool CreateFile(User user, Guid guid, string name, GraphFormat fileFormat)
+        public bool CreateFile(User user, Guid guid, GraphFormat fileFormat)
         {
             var userCredentials = _googleAuthHandler.GetUserCredentials(user.GoogleId).Result;
             if (userCredentials == null) return false;
@@ -37,19 +37,19 @@ namespace Api.Services
             var folderId = CreateFolder(user, "Optical Graph Recognition App");
 
             // Define parameters of request.
-            var file = _imageService.GetImageFileInfo(guid, user.Id.ToString(), fileFormat);
-            if (file == null) return false;
-            var uploadStream = new System.IO.FileStream(file.FullName,
+            var graphFile = _imageService.GetGraphFile(guid, user.Id, fileFormat);
+            if (graphFile == null) return false;
+            var uploadStream = new System.IO.FileStream(graphFile.File.FullName,
                                                 System.IO.FileMode.Open,
                                                 System.IO.FileAccess.Read);
             // Get the media upload request object.
             var fileToCreate = new File
             {
-                Name = name+file.Extension,
+                Name = String.Concat(graphFile.Name, graphFile.File.Extension),
                 Parents = new List<string>() { folderId }
             };
 
-            var mimeType = MimeTypeMap.GetMimeType(file.Extension);
+            var mimeType = MimeTypeMap.GetMimeType(graphFile.File.Extension);
 
             var uploadRequest = driveService.Files.Create(fileToCreate, uploadStream, mimeType);
             uploadRequest.Upload();
