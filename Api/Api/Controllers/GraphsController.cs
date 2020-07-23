@@ -21,12 +21,12 @@ namespace Api.Controllers
     public class GraphsController : ControllerBase
     {
         private readonly ImageValidator _imageValidator;
-        private readonly IGraphService _imageService;
+        private readonly IGraphService _graphService;
 
-        public GraphsController(ImageValidator imageValidator, IGraphService imageService)
+        public GraphsController(ImageValidator imageValidator, IGraphService graphService)
         {
             _imageValidator = imageValidator;
-            _imageService = imageService;
+            _graphService = graphService;
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Api.Controllers
 
             var userId = GetUserId();
 
-            var guid = await _imageService.CreateGraphEntity(model, validExtension, userId);
+            var guid = await _graphService.CreateGraphEntity(model, validExtension, userId);
 
             if (guid != null)
                 return Ok(new { guid });
@@ -78,11 +78,11 @@ namespace Api.Controllers
         public IActionResult Process([FromRoute] Guid guid, [FromQuery] ProcessMode mode = ProcessMode.GRID_BG, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
             var userId = GetUserId();
-            var result = _imageService.ProcessImageFile(guid, userId, mode);
+            var result = _graphService.ProcessImageFile(guid, userId, mode);
 
             if (result)
             {
-                var graphFile = _imageService.GetGraphFile(guid, userId, format);
+                var graphFile = _graphService.GetGraphFile(guid, userId, format);
                 var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
                 return File(stream, "application/octet-stream", graphFile.Name);
@@ -107,7 +107,7 @@ namespace Api.Controllers
         {
             var userId = GetUserId();
 
-            var graphFile = _imageService.GetGraphFile(guid, userId, format);
+            var graphFile = _graphService.GetGraphFile(guid, userId, format);
 
             if (graphFile == null)
                 return BadRequest(new ErrorMessage("There is no such file"));
@@ -133,7 +133,7 @@ namespace Api.Controllers
 
             // TODO: validate if graph file is really graph file
 
-            var result = await _imageService.UpdateGraphEntityAsync(guid, userId, file);
+            var result = await _graphService.UpdateGraphEntityAsync(guid, userId, file);
 
             if (result)
                 return Ok();
@@ -154,7 +154,7 @@ namespace Api.Controllers
         {
             var userId = GetUserId();
 
-            var result = await _imageService.SetEntityAsPublicAsync(guid, userId);
+            var result = await _graphService.SetEntityAsPublicAsync(guid, userId);
 
             if (result)
                 return Ok();
@@ -175,7 +175,7 @@ namespace Api.Controllers
         {
             var userId = GetUserId();
 
-            bool result = await _imageService.RemoveEntityAsync(guid, userId);
+            bool result = await _graphService.RemoveEntityAsync(guid, userId);
 
             if (result)
                 return Ok(new { message = "success" });
@@ -197,7 +197,7 @@ namespace Api.Controllers
         {
             var userId = GetUserId();
 
-            var result = _imageService.GetHistory(userId);
+            var result = _graphService.GetHistory(userId);
 
             if (result != null)
                 return Ok(result);
@@ -218,7 +218,7 @@ namespace Api.Controllers
         [HttpGet("recent")]
         public IActionResult GetRecent([FromQuery] int amount = 100)
         {
-            var result = _imageService.GetRecent(amount);
+            var result = _graphService.GetRecent(amount);
 
             if (result != null)
                 return Ok(result);
