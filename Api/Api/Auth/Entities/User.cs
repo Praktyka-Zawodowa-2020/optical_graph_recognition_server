@@ -6,6 +6,7 @@ namespace Api.Entities
 {
     public class User
     {
+        [JsonIgnore]
         public int Id { get; set; }
         public string Mail { get; set; }
         public List<GraphEntity> GraphEntities { get; set; }

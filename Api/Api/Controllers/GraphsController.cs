@@ -143,7 +143,7 @@ namespace Api.Controllers
             if (result)
                 return Ok();
             else
-                return BadRequest();
+                return BadRequest(new { message = "You don't have permission to update this graph." });
         }
 
         /// <summary>
@@ -162,9 +162,9 @@ namespace Api.Controllers
             bool result = await _imageService.RemoveEntityAsync(guid, userId);
 
             if (result)
-                return Ok();
+                return Ok(new { message = "success" });
             else
-                return BadRequest();
+                return BadRequest(new { message = "Graph is already removed or you don't have permission to remove it." });
         }
 
         /// <summary>

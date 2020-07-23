@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Api.Helpers;
 using Api.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -31,7 +32,7 @@ namespace Api.Services
 
         public GraphFile GetGraphFile(Guid guid, int userId, GraphFormat format)
         {
-            var user = _dataContext.Users.SingleOrDefault(u => u.Id == userId);
+            var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(u => u.Id == userId);
             var entity = user.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid));
             if (entity == null) return null;
 
@@ -58,7 +59,7 @@ namespace Api.Services
             var graphFile = new GraphFile()
             {
                 File = file,
-                Name = entity.Name
+                Name = string.Concat(entity.Name, file.Extension)
             };
 
             return graphFile;
@@ -66,7 +67,7 @@ namespace Api.Services
 
         public bool ProcessImageFile(Guid guid, int userId, ProcessMode mode)
         {
-            var user = _dataContext.Users.SingleOrDefault(u => u.Id == userId);
+            var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(u => u.Id == userId);
             var entity = user.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid));
             if (entity == null) return false;
 
@@ -81,7 +82,7 @@ namespace Api.Services
         public async Task<Guid> CreateGraphEntity(CreateGraphRequest model, string validExtension, int userId)
         {
             var file = model.File;
-            var user = _dataContext.Users.SingleOrDefault(x => x.Id == userId);
+            var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(x => x.Id == userId);
 
             Guid guid = Guid.NewGuid();
             var path = Path.Combine(_targetFilePath, guid.ToString());
@@ -125,7 +126,13 @@ namespace Api.Services
 
             user.GraphEntities.Remove(entity);
             if (!entity.IsPublic)
+            {
                 _dataContext.GraphEntities.Remove(entity);
+               
+                var path = Path.Combine(_appSettings.StoragePaths.UploadsDirectory, guid.ToString());
+                if (Directory.Exists(path))
+                    Directory.Delete(path, true);
+            }
 
             await _dataContext.SaveChangesAsync();
 
@@ -134,13 +141,13 @@ namespace Api.Services
 
         public IEnumerable<GraphEntity> GetHistory(int userId)
         {
-            var user = _dataContext.Users.SingleOrDefault(u => u.Id == userId);
+            var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(u => u.Id == userId);
             return user.GraphEntities.ToList();
         }
 
         public IEnumerable<GraphEntity> GetRecent(int amount)
         {
-            var entities = _dataContext.GraphEntities.Where(e => e.IsPublic).OrderBy(e => e.CreatedAt).Take(amount).ToList();
+            var entities = _dataContext.GraphEntities.Where(e => e.IsPublic).Include(e => e.Owner).OrderBy(e => e.CreatedAt).Take(amount).ToList();
             return entities;
         }
     }
