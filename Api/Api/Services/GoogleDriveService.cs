@@ -14,12 +14,12 @@ namespace Api.Services
     public class GoogleDriveService : IGoogleDriveService
     {
         private readonly GoogleAuthHandler _googleAuthHandler;
-        private readonly IGraphService _imageService;
+        private readonly IGraphService _graphService;
         private readonly DataContext _context;
-        public GoogleDriveService(DataContext context, GoogleAuthHandler googleAuthHandler, IGraphService imageService)
+        public GoogleDriveService(DataContext context, GoogleAuthHandler googleAuthHandler, IGraphService graphService)
         {
             _googleAuthHandler = googleAuthHandler;
-            _imageService = imageService;
+            _graphService = graphService;
             _context = context;
         }
 
@@ -37,7 +37,7 @@ namespace Api.Services
             var folderId = CreateFolder(user, "Optical Graph Recognition App");
 
             // Define parameters of request.
-            var graphFile = _imageService.GetGraphFile(guid, user.Id, fileFormat);
+            var graphFile = _graphService.GetGraphFile(guid, user.Id, fileFormat);
             if (graphFile == null) return false;
             var uploadStream = new System.IO.FileStream(graphFile.File.FullName,
                                                 System.IO.FileMode.Open,
