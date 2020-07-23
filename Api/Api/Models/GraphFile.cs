@@ -8,11 +8,11 @@ namespace Api.Models
     public class GraphFile
     {
         /// <summary>
-        /// Represents actual file in the physical storage.
+        /// Represents an actual file in the physical storage.
         /// </summary>
         public FileInfo File { get; set; }
         /// <summary>
-        /// Specifies meta name for graph entity.
+        /// Meta name of the graph entity, the File comes under.
         /// </summary>
         public string Name { get; set; }
     }

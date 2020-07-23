@@ -13,6 +13,8 @@ namespace Api.Controllers
 {
     [Authorize]
     [Produces("application/json")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ErrorMessage), 400)]
     [Route("api/graphs")]
     [ApiController]
     public class GraphsController : ControllerBase
@@ -35,18 +37,19 @@ namespace Api.Controllers
         /// </remarks>
         /// <response code="200">Returns a GUID to the newly created resource</response>
         /// <response code="400"> Returns error message if the file is not valid</response> 
+        [ProducesResponseType(typeof(Guid), 200)]
         [HttpPost("create")]
         public async Task<IActionResult> CreateAsync([FromForm] CreateGraphRequest model)
         {
             var file = model.File;
             if (file == null)
-                return BadRequest(new { message = "No file provided" });
+                return BadRequest(new ErrorMessage("No file provided"));
             if (file.Length == 0)
-                return BadRequest(new { message = "Empty file" });
+                return BadRequest(new ErrorMessage("Empty file"));
 
             string validExtension = _imageValidator.GetValidExtension(file.OpenReadStream());
             if (validExtension.Equals(String.Empty))
-                return BadRequest(new { message = "Wrong file signature" });
+                return BadRequest(new ErrorMessage("Wrong file signature"));
 
             var userId = GetUserId();
 
@@ -55,7 +58,7 @@ namespace Api.Controllers
             if (guid != null)
                 return Ok(new { guid });
             else
-                return BadRequest(new { message = "Saving image gone wrong" });
+                return BadRequest(new ErrorMessage("Saving image gone wrong"));
         }
 
         /// <summary>
@@ -67,7 +70,10 @@ namespace Api.Controllers
         /// <param name="guid">GUID specyfying the graph entity.</param> 
         /// <param name="mode">Mode, in which an image file of the graph entity is processed by the script. Defaults to GRID_BG</param> 
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param> 
+        /// <response code="200"> Returns the graph file in the response body</response>
         [HttpPost("process/{guid}")]
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
         public IActionResult Process([FromRoute] Guid guid, [FromQuery] ProcessMode mode = ProcessMode.GRID_BG, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
             var userId = GetUserId();
@@ -81,7 +87,7 @@ namespace Api.Controllers
                 return File(stream, "application/octet-stream", graphFile.Name);
             }
             else
-                return BadRequest(new { message = "Processing image gone wrong" });
+                return BadRequest(new ErrorMessage("Processing image gone wrong"));
         }
 
         /// <summary>
@@ -94,6 +100,8 @@ namespace Api.Controllers
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param> 
         /// <response code="200"> Returns the graph file in the response body</response>
         /// <response code="400">Returns error message if the file is not found.</response>
+        [Produces("application/octet-stream")]
+        [ProducesResponseType(typeof(FileContentResult), 200)]
         [HttpGet("get/{guid}")]
         public IActionResult Get(Guid guid, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
@@ -102,7 +110,7 @@ namespace Api.Controllers
             var graphFile = _imageService.GetGraphFile(guid, userId, format);
 
             if (graphFile == null)
-                return BadRequest(new { message = "There is no such file" });
+                return BadRequest(new ErrorMessage("There is no such file"));
 
             var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
@@ -110,7 +118,7 @@ namespace Api.Controllers
         }
 
         /// <summary>
-        /// - - - TODO - - - # Updates a graph file of the entity.   
+        /// - - - TODO - - - /// Updates a graph file of the entity.   
         /// </summary>
         /// <remarks>
         /// If a image file was processed wrong, allows to update a graph file of the given graph entity by uploading a corrected graph file. 
@@ -120,9 +128,7 @@ namespace Api.Controllers
         [HttpPut("update/{guid}")]
         public IActionResult Put([FromRoute] Guid guid, IFormFile File)
         {
-            var userId = GetUserId();
-
-            return Ok();
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -143,7 +149,7 @@ namespace Api.Controllers
             if (result)
                 return Ok();
             else
-                return BadRequest(new { message = "You don't have permission to update this graph." });
+                return BadRequest(new ErrorMessage("You don't have permission to update this graph."));
         }
 
         /// <summary>
@@ -164,7 +170,7 @@ namespace Api.Controllers
             if (result)
                 return Ok(new { message = "success" });
             else
-                return BadRequest(new { message = "Graph is already removed or you don't have permission to remove it." });
+                return BadRequest(new ErrorMessage("Graph is already removed or you don't have permission to remove it."));
         }
 
         /// <summary>
@@ -174,6 +180,8 @@ namespace Api.Controllers
         /// Returns history of user's graph entities along with details.
         /// </remarks>
         /// <returns></returns>
+        /// <response code="200">Returns a List of GraphEntity items</response>
+        [ProducesResponseType(typeof(List<GraphEntity>), 200)]
         [HttpGet("history")]
         public IActionResult GetHistory()
         {
@@ -194,7 +202,8 @@ namespace Api.Controllers
         /// Returns a list containing details of recently uploaded graph entities, that were ever made to public.
         /// </remarks>
         /// <param name="amount">Specifies amount of graph entities in a returned list.</param>
-        /// <returns></returns>
+        /// <response code="200">Returns a List of GraphEntity items</response>
+        [ProducesResponseType(typeof(List<GraphEntity>), 200)]
         [AllowAnonymous]
         [HttpGet("recent")]
         public IActionResult GetRecent([FromQuery] int amount)
