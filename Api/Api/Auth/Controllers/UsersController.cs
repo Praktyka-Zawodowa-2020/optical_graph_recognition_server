@@ -9,6 +9,7 @@ namespace Api.Controllers
 {
     [Authorize]
     [Route("users")]
+    [Produces("application/json")]
     [ApiController]
     public class UsersController : ControllerBase
     {
@@ -25,10 +26,11 @@ namespace Api.Controllers
         /// <remarks>
         ///     Signs-in user based on Google tokens acquired by requesting the Google APIs in Client Application. To do so, check "Google Implicit Flow".
         /// </remarks>
-        /// <response code="200"> Returns an access token (valid for 15 min) in a response body used to authorize this API along with a refresh token (valid for 1 week), that can be stored for later - used to obtain a new access token if one expires.</response>
+        /// <response code="200"> Returns an access token and a refresh token.</response>
         /// <response code="400">Invalid token(s).</response>
         [AllowAnonymous]
         [HttpPost("authenticate")]
+        [ProducesResponseType(typeof(AuthenticateResponse), 200)]
         public IActionResult Authenticate([FromBody] AuthenticateRequest model)
         {
             var response = _userService.Authenticate(model);
