@@ -15,12 +15,12 @@ namespace Api.Services
         /// </summary>
         /// <param name="guid">GUID identifying the graph entity</param>
         /// <param name="userId">If entity is not public, owner's id of the graph entity.</param>
-        /// <param name="format">Specifies which file (in which format) to return.</param>
         /// <returns>GraphFile</returns>
-        GraphFile GetGraphFile(Guid guid, int userId, GraphFormat format);
-        bool ProcessImageFile(Guid guid, int userId, ProcessMode mode);
         Task<bool> SetEntityAsPublicAsync(Guid guid, int userId);
+        Task<bool>UpdateGraphEntityAsync(Guid guid, int userId, IFormFile file);
         Task<bool> RemoveEntityAsync(Guid guid, int userId);
+        bool ProcessImageFile(Guid guid, int userId, ProcessMode mode);
+        GraphFile GetGraphFile(Guid guid, int userId, GraphFormat format);
         IEnumerable<GraphEntity> GetHistory(int userId);
         IEnumerable<GraphEntity> GetRecent(int amount);
     }
