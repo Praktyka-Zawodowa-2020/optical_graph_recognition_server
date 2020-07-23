@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="10.0.0" />
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="8.0.1" />
     <PackageReference Include="Google.Apis.Auth" Version="1.48.0" />
     <PackageReference Include="Google.Apis.Drive.v3" Version="1.48.0.1995" />
     <PackageReference Include="MediaTypeMap" Version="2.1.0">

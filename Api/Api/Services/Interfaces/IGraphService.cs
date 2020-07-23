@@ -1,4 +1,5 @@
-﻿using Api.Models;
+﻿using Api.DTOs;
+using Api.Models;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -20,8 +21,8 @@ namespace Api.Services
         Task<bool>UpdateGraphEntityAsync(Guid guid, int userId, IFormFile file);
         Task<bool> RemoveEntityAsync(Guid guid, int userId);
         bool ProcessImageFile(Guid guid, int userId, ProcessMode mode);
-        GraphFile GetGraphFile(Guid guid, int userId, GraphFormat format);
-        IEnumerable<GraphEntity> GetHistory(int userId);
-        IEnumerable<GraphEntity> GetRecent(int amount);
+        GraphFileDTO GetGraphFile(Guid guid, int userId, GraphFormat format);
+        IEnumerable<GraphEntityDTO> GetHistory(int userId);
+        IEnumerable<GraphEntityDTO> GetRecent(int amount);
     }
 }
