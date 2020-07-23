@@ -32,8 +32,10 @@ namespace Api.Services
 
         public GraphFile GetGraphFile(Guid guid, int userId, GraphFormat format)
         {
-            var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(u => u.Id == userId);
-            var entity = user.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid));
+            var entity = _dataContext.GraphEntities
+                .Include(g => g.Owner)
+                .SingleOrDefault(g => 
+                g.GUID.Equals(guid) && (g.Owner.Id == userId || g.IsPublic));
             if (entity == null) return null;
 
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
@@ -128,7 +130,7 @@ namespace Api.Services
             if (!entity.IsPublic)
             {
                 _dataContext.GraphEntities.Remove(entity);
-               
+
                 var path = Path.Combine(_appSettings.StoragePaths.UploadsDirectory, guid.ToString());
                 if (Directory.Exists(path))
                     Directory.Delete(path, true);
@@ -149,6 +151,21 @@ namespace Api.Services
         {
             var entities = _dataContext.GraphEntities.Where(e => e.IsPublic).Include(e => e.Owner).OrderBy(e => e.CreatedAt).Take(amount).ToList();
             return entities;
+        }
+
+        public async Task<bool> UpdateGraphEntityAsync(Guid guid, int userId, IFormFile file)
+        {
+            var entity = _dataContext.GraphEntities.Include(g=>g.Owner).SingleOrDefault(g => g.GUID.Equals(guid) && g.Owner.Id == userId);
+            if (entity == null) return false;
+
+            var path = Path.Combine(_targetFilePath, guid.ToString());
+            if (!Directory.Exists(path))
+                return false;
+
+            using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetInFileName, Path.GetExtension(file.FileName))), FileMode.Truncate))
+                await file.CopyToAsync(targetStream);
+
+            return true;
         }
     }
 }

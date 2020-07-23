@@ -10,7 +10,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
-{
+{   
+    // TODO: Async methods
     [Authorize]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -98,9 +99,8 @@ namespace Api.Controllers
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param> 
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param> 
-        /// <response code="200"> Returns the graph file in the response body</response>
+        /// <response code="200"> Returns the graph file in the response body as "application/octet-stream"</response>
         /// <response code="400">Returns error message if the file is not found.</response>
-        [Produces("application/octet-stream")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
         [HttpGet("get/{guid}")]
         public IActionResult Get(Guid guid, [FromQuery] GraphFormat format = GraphFormat.GraphML)
@@ -118,17 +118,27 @@ namespace Api.Controllers
         }
 
         /// <summary>
-        /// - - - TODO - - - /// Updates a graph file of the entity.   
+        /// Updates a graph file of the entity.   
         /// </summary>
         /// <remarks>
         /// If a image file was processed wrong, allows to update a graph file of the given graph entity by uploading a corrected graph file. 
+        /// <para>TODO - validate if graph file is really graph file</para>
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param>
-        /// <param name="File">Graph file in a graph format.</param>
+        /// <param name="file">Graph file in a graph format.</param>
         [HttpPut("update/{guid}")]
-        public IActionResult Put([FromRoute] Guid guid, IFormFile File)
+        public async Task<IActionResult> PutAsync([FromRoute] Guid guid, IFormFile file)
         {
-            throw new NotImplementedException();
+            var userId = GetUserId();
+
+            // TODO: validate if graph file is really graph file
+
+            var result = await _imageService.UpdateGraphEntityAsync(guid, userId, file);
+
+            if (result)
+                return Ok();
+            else
+                return BadRequest(new ErrorMessage("Update gone wrong"));
         }
 
         /// <summary>
@@ -206,7 +216,7 @@ namespace Api.Controllers
         [ProducesResponseType(typeof(List<GraphEntity>), 200)]
         [AllowAnonymous]
         [HttpGet("recent")]
-        public IActionResult GetRecent([FromQuery] int amount)
+        public IActionResult GetRecent([FromQuery] int amount = 100)
         {
             var result = _imageService.GetRecent(amount);
 
