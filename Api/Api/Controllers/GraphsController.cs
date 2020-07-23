@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Api.DTOs;
 using Api.Models;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -18,7 +19,7 @@ namespace Api.Controllers
     [Route("api/graphs")]
     [Produces("application/json")]
     [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ErrorMessage), 400)]
+    [ProducesResponseType(typeof(ErrorMessageResponse), 400)]
     public class GraphsController : ControllerBase
     {
         private readonly ImageValidator _imageValidator;
@@ -45,13 +46,13 @@ namespace Api.Controllers
         {
             var file = model.File;
             if (file == null)
-                return BadRequest(new ErrorMessage("No file provided"));
+                return BadRequest(new ErrorMessageResponse("No file provided"));
             if (file.Length == 0)
-                return BadRequest(new ErrorMessage("Empty file"));
+                return BadRequest(new ErrorMessageResponse("Empty file"));
 
             string validExtension = _imageValidator.GetValidExtension(file.OpenReadStream());
             if (validExtension.Equals(String.Empty))
-                return BadRequest(new ErrorMessage("Wrong file signature"));
+                return BadRequest(new ErrorMessageResponse("Wrong file signature"));
 
             var userId = GetUserId();
 
@@ -60,7 +61,7 @@ namespace Api.Controllers
             if (guid != null)
                 return Ok(new { guid });
             else
-                return BadRequest(new ErrorMessage("Saving image gone wrong"));
+                return BadRequest(new ErrorMessageResponse("Saving image gone wrong"));
         }
 
         /// <summary>
@@ -89,7 +90,7 @@ namespace Api.Controllers
                 return File(stream, "application/octet-stream", graphFile.Name);
             }
             else
-                return BadRequest(new ErrorMessage("Processing image gone wrong"));
+                return BadRequest(new ErrorMessageResponse("Processing image gone wrong"));
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace Api.Controllers
             var graphFile = _graphService.GetGraphFile(guid, userId, format);
 
             if (graphFile == null)
-                return BadRequest(new ErrorMessage("There is no such file"));
+                return BadRequest(new ErrorMessageResponse("There is no such file"));
 
             var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
@@ -139,7 +140,7 @@ namespace Api.Controllers
             if (result)
                 return Ok();
             else
-                return BadRequest(new ErrorMessage("Update gone wrong"));
+                return BadRequest(new ErrorMessageResponse("Update gone wrong"));
         }
 
         /// <summary>
@@ -160,7 +161,7 @@ namespace Api.Controllers
             if (result)
                 return Ok();
             else
-                return BadRequest(new ErrorMessage("You don't have permission to update this graph."));
+                return BadRequest(new ErrorMessageResponse("You don't have permission to update this graph."));
         }
 
         /// <summary>
@@ -181,7 +182,7 @@ namespace Api.Controllers
             if (result)
                 return Ok(new { message = "success" });
             else
-                return BadRequest(new ErrorMessage("Graph is already removed or you don't have permission to remove it."));
+                return BadRequest(new ErrorMessageResponse("Graph is already removed or you don't have permission to remove it."));
         }
 
         /// <summary>
@@ -193,7 +194,7 @@ namespace Api.Controllers
         /// <returns></returns>
         /// <response code="200">Returns a List of GraphEntity items</response>
         [HttpGet("history")]
-        [ProducesResponseType(typeof(List<GraphEntity>), 200)]
+        [ProducesResponseType(typeof(List<GraphEntityDTO>), 200)]
         public IActionResult GetHistory()
         {
             var userId = GetUserId();
@@ -216,7 +217,7 @@ namespace Api.Controllers
         /// <response code="200">Returns a List of GraphEntity items</response>
         [AllowAnonymous]
         [HttpGet("recent")]
-        [ProducesResponseType(typeof(List<GraphEntity>), 200)]
+        [ProducesResponseType(typeof(List<GraphEntityDTO>), 200)]
         public IActionResult GetRecent([FromQuery] int amount = 100)
         {
             var result = _graphService.GetRecent(amount);

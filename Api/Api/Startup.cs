@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using Api.Auth.Helpers;
 using Api.Helpers;
+using Api.Mapper;
 using Api.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -16,6 +17,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using AutoMapper;
 
 namespace Api
 {
@@ -68,6 +70,8 @@ namespace Api
             });
 
             // configure DI for application services
+            services.AddAutoMapper(typeof(MappingProfile));
+
             services.AddScoped<ImageValidator, ImageValidator>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IGraphService, GraphService>();

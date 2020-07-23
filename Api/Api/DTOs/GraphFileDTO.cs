@@ -5,7 +5,7 @@ namespace Api.Models
     /// <summary>
     /// DTO for graph files.
     /// </summary>
-    public class GraphFile
+    public class GraphFileDTO
     {
         /// <summary>
         /// Represents an actual file in the physical storage.

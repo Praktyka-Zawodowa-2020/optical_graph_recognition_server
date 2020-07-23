@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Api.DTOs;
 using Api.Helpers;
 using Api.Models;
+using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,22 +17,25 @@ namespace Api.Services
     public class GraphService : IGraphService
     {
         private readonly DataContext _dataContext;
-        private readonly ILogger _logger;
         private readonly AppSettings _appSettings;
+        private readonly ILogger _logger;
+        private readonly IMapper _mapper;
         public GraphService(IOptions<AppSettings> appSettings,
                             ILogger<GraphService> logger,
-                            DataContext dataContext)
+                            DataContext dataContext,
+                            IMapper mapper)
         {
             _dataContext = dataContext;
-            _logger = logger;
             _appSettings = appSettings.Value;
+            _logger = logger;
+            _mapper = mapper;
             _targetFilePath = _appSettings.StoragePaths.UploadsDirectory;
         }
 
         private readonly string _targetInFileName = "raw";
         private readonly string _targetFilePath;
 
-        public GraphFile GetGraphFile(Guid guid, int userId, GraphFormat format)
+        public GraphFileDTO GetGraphFile(Guid guid, int userId, GraphFormat format)
         {
             var entity = _dataContext.GraphEntities
                 .Include(g => g.Owner)
@@ -50,15 +55,15 @@ namespace Api.Services
                 if (format == GraphFormat.RawImage && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
                     file = item;
                 else
-                if (format == GraphFormat.GraphML && item.Extension == (".graphml"))
+                if (format == GraphFormat.GraphML && item.Extension.Equals(Strings.GRAPHML))
                     file = item;
                 else
-                if (format == GraphFormat.Graph6 && item.Extension == (".g6"))
+                if (format == GraphFormat.Graph6 && item.Extension.Equals(Strings.G6))
                     file = item;
             }
             if (file == null) return null;
 
-            var graphFile = new GraphFile()
+            var graphFile = new GraphFileDTO()
             {
                 File = file,
                 Name = string.Concat(entity.Name, file.Extension)
@@ -141,16 +146,19 @@ namespace Api.Services
             return true;
         }
 
-        public IEnumerable<GraphEntity> GetHistory(int userId)
+        public IEnumerable<GraphEntityDTO> GetHistory(int userId)
         {
             var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(u => u.Id == userId);
-            return user.GraphEntities.ToList();
+            var entities = user.GraphEntities.ToList();
+            var result = _mapper.Map<List<GraphEntity>, List<GraphEntityDTO>>(entities);
+            return result;
         }
 
-        public IEnumerable<GraphEntity> GetRecent(int amount)
+        public IEnumerable<GraphEntityDTO> GetRecent(int amount)
         {
             var entities = _dataContext.GraphEntities.Where(e => e.IsPublic).Include(e => e.Owner).OrderBy(e => e.CreatedAt).Take(amount).ToList();
-            return entities;
+            var result = _mapper.Map<List<GraphEntity>, List<GraphEntityDTO>>(entities);
+            return result;
         }
 
         public async Task<bool> UpdateGraphEntityAsync(Guid guid, int userId, IFormFile file)

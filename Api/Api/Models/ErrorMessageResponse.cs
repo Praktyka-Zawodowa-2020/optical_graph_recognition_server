@@ -1,10 +1,10 @@
 ﻿namespace Api.Models
 {
-    public class ErrorMessage
+    public class ErrorMessageResponse
     {
         public string Message { get; set; }
 
-        public ErrorMessage(string message)
+        public ErrorMessageResponse(string message)
         {
             Message = message;
         }
