@@ -1,7 +1,7 @@
 ﻿namespace Api.Models
 {
     /// <summary>
-    /// Parameters of the script.
+    /// Parameters of the image processing script.
     /// </summary>
     public class ProcessRequest
     {
