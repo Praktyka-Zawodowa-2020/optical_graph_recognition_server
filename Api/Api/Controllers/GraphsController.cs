@@ -61,7 +61,7 @@ namespace Api.Controllers
             if (guid != null)
                 return Ok(new { guid });
             else
-                return BadRequest(new ErrorMessageResponse("Saving image gone wrong"));
+                return BadRequest(new ErrorMessageResponse("Failed at creating graph entity."));
         }
 
         /// <summary>
@@ -75,17 +75,22 @@ namespace Api.Controllers
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param>
         /// <param name="processRequest">Script parameters allowing to tweak processing to the actual needs.</param> 
         /// <response code="200"> Returns the graph file in the response body</response>
+        /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         [HttpPost("process/{guid}")]
         [Produces("application/octet-stream", "application/json")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
         public IActionResult Process([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
             var userId = GetUserId();
-            var result = _graphService.ProcessImageFile(guid, userId, processRequest);
+
+            var ownership = _graphService.CheckOwnership(guid, userId);
+            if (!ownership) return GraphForbidden();
+
+            var result = _graphService.ProcessImageFile(guid, processRequest);
 
             if (result)
             {
-                var graphFile = _graphService.GetGraphFile(guid, userId, format);
+                var graphFile = _graphService.GetGraphFile(guid, format);
                 var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
                 return File(stream, "application/octet-stream", graphFile.Name);
@@ -104,6 +109,7 @@ namespace Api.Controllers
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param> 
         /// <response code="200"> Returns the graph file in the response body as "application/octet-stream"</response>
         /// <response code="400">Returns error message if the file is not found.</response>
+        /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         [HttpGet("get/{guid}")]
         [Produces("application/octet-stream", "application/json")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
@@ -111,7 +117,10 @@ namespace Api.Controllers
         {
             var userId = GetUserId();
 
-            var graphFile = _graphService.GetGraphFile(guid, userId, format);
+            var allowed = _graphService.CheckOwnershipAndPublicity(guid, userId);
+            if (!allowed) return GraphForbidden();
+
+            var graphFile = _graphService.GetGraphFile(guid, format);
 
             if (graphFile == null)
                 return BadRequest(new ErrorMessageResponse("There is no such file"));
@@ -130,14 +139,18 @@ namespace Api.Controllers
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param>
         /// <param name="file">Graph file in a graph format.</param>
+        /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         [HttpPut("update/{guid}")]
         public async Task<IActionResult> PutAsync([FromRoute] Guid guid, IFormFile file)
         {
             var userId = GetUserId();
 
+            var ownership = _graphService.CheckOwnership(guid, userId);
+            if (!ownership) return GraphForbidden();
+
             // TODO: Validate if graph file is really graph file
 
-            var result = await _graphService.UpdateGraphEntityAsync(guid, userId, file);
+            var result = await _graphService.UpdateGraphEntityAsync(guid, file);
 
             if (result)
                 return Ok();
@@ -152,18 +165,22 @@ namespace Api.Controllers
         /// If a graph entity is set to public, it is available for other users to see, download and send to Drive. Once set to public, it stays on the server forever.
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param>
+        /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         /// <returns></returns>
         [HttpPut("set-public/{guid}")]
         public async Task<IActionResult> PutAsync([FromRoute] Guid guid)
         {
             var userId = GetUserId();
 
-            var result = await _graphService.SetEntityAsPublicAsync(guid, userId);
+            var ownership = _graphService.CheckOwnership(guid, userId);
+            if (!ownership) return GraphForbidden();
+
+            var result = await _graphService.SetEntityAsPublicAsync(guid);
 
             if (result)
                 return Ok();
             else
-                return BadRequest(new ErrorMessageResponse("You don't have permission to update this graph."));
+                return BadRequest(new ErrorMessageResponse("Graph does not exist anymore."));
         }
 
         /// <summary>
@@ -173,18 +190,22 @@ namespace Api.Controllers
         /// Removes a certain graph entity from server's storage and user's history. If an entity was ever set to public - it is removed only from user's own history.
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param>
+        /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         /// <returns></returns>
         [HttpDelete("delete/{guid}")]
         public async Task<IActionResult> DeleteAsync([FromRoute] Guid guid)
         {
             var userId = GetUserId();
 
-            bool result = await _graphService.RemoveEntityAsync(guid, userId);
+            var ownership = _graphService.CheckOwnership(guid, userId);
+            if (!ownership) return GraphForbidden();
+
+            bool result = await _graphService.RemoveEntityAsync(guid);
 
             if (result)
                 return Ok(new { message = "success" });
             else
-                return BadRequest(new ErrorMessageResponse("Graph is already removed or you don't have permission to remove it."));
+                return BadRequest(new ErrorMessageResponse("Graph is already removed."));
         }
 
         /// <summary>
@@ -231,6 +252,7 @@ namespace Api.Controllers
         }
 
         // helper methods
+
         /// <summary>
         /// Return users id from ClaimsPrincipal.
         /// </summary>
@@ -238,6 +260,15 @@ namespace Api.Controllers
         private int GetUserId()
         {
             return Int32.Parse(User.Claims.ToList()[0].Value);
+        }
+
+        /// <summary>
+        /// Returns 403Forbidden status code along with a error message
+        /// </summary>
+        /// <returns></returns>
+        private ObjectResult GraphForbidden()
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new ErrorMessageResponse("You possess no ownership over this graph."));
         }
     }
 }

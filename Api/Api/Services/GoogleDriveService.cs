@@ -37,7 +37,8 @@ namespace Api.Services
             var folderId = CreateFolder(user, "Optical Graph Recognition App");
 
             // Define parameters of request.
-            var graphFile = _graphService.GetGraphFile(guid, user.Id, fileFormat);
+
+            var graphFile = _graphService.GetGraphFile(guid, fileFormat);
             if (graphFile == null) return false;
             var uploadStream = new System.IO.FileStream(graphFile.File.FullName,
                                                 System.IO.FileMode.Open,
