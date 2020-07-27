@@ -119,7 +119,7 @@ namespace Api.Services
         private string generateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secrets.Secret);
+            var key = Encoding.ASCII.GetBytes(_appSettings.Secrets.AppSecret);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]

@@ -4,8 +4,8 @@ using System.Text.Json.Serialization;
 namespace Api.Models
 {
     /// <summary>
-    /// Mode in which an image file will be processed by python script.
-    /// <para></para>
+    /// Mode, in which an image file of the graph entity is processed by the script.
+    /// <br></br>
     /// <para>GRID_BG - Hand drawn on grid/lined piece of paper (grid/lined notebook etc.)</para>
     /// <para>CLEAN_BG - Hand drawn on empty uniform color background (on board, empty piece of paper, editor (paint)</para>
     /// <para>PRINTED - Printed (e.g. from paper, publication, book...)</para>

@@ -42,7 +42,7 @@ namespace Api
 
             // configure jwt authentication
             var appSettings = appSettingsSection.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secrets.Secret);
+            var key = Encoding.ASCII.GetBytes(appSettings.Secrets.AppSecret);
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

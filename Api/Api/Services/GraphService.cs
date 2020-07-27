@@ -72,7 +72,7 @@ namespace Api.Services
             return graphFile;
         }
 
-        public bool ProcessImageFile(Guid guid, int userId, ProcessMode mode)
+        public bool ProcessImageFile(Guid guid, int userId, ProcessRequest model)
         {
             var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(u => u.Id == userId);
             var entity = user.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid));
