@@ -16,11 +16,16 @@ namespace Api.Controllers
     {
         private readonly DataContext _dataContext;
         private readonly IGoogleDriveService _driveService;
+        private readonly IGraphService _graphService;
 
-        public GoogleDriveController(DataContext dataContext, IGoogleDriveService driveService)
+        public GoogleDriveController(
+            DataContext dataContext,
+            IGoogleDriveService driveService,
+            IGraphService graphService)
         {
             _dataContext = dataContext;
             _driveService = driveService;
+            _graphService = graphService;
         }
 
         /// <summary>
@@ -38,15 +43,8 @@ namespace Api.Controllers
             var userId = User.Claims.ToList()[0].Value;
             var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);
 
-            var entity = await _dataContext.GraphEntities
-                .Include(g => g.Owner)
-                .SingleOrDefaultAsync(g => g.GUID.Equals(guid));
-
-            if (entity.Owner != null && !entity.IsPublic)
-            {
-                if (!entity.Owner.Id.Equals(userId))
-                    return BadRequest(new ErrorMessageResponse("No permission to the graph entity"));
-            }
+            if (_graphService.CheckOwnershipAndPublicity(guid, user.Id))
+                return BadRequest(new ErrorMessageResponse("No permission to the graph entity"));
 
             var res = _driveService.CreateFile(user, guid, format);
             if (res)
