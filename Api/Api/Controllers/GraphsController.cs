@@ -268,7 +268,7 @@ namespace Api.Controllers
         /// <returns></returns>
         private ObjectResult GraphForbidden()
         {
-            return StatusCode(StatusCodes.Status403Forbidden, new ErrorMessageResponse("You posses no ownership over this graph."));
+            return StatusCode(StatusCodes.Status403Forbidden, new ErrorMessageResponse("You possess no ownership over this graph."));
         }
     }
 }

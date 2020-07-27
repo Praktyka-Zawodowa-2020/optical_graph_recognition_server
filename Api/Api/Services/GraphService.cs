@@ -182,8 +182,8 @@ namespace Api.Services
 
         public bool CheckOwnershipAndPublicity(Guid guid, int userId)
         {
-            var entity = _dataContext.GraphEntities.Include(g => g.Owner).SingleOrDefault(g => g.GUID.Equals(guid) && g.Owner.Id == userId);
-            return !(entity == null) && entity.IsPublic;
+            var entity = _dataContext.GraphEntities.Include(g => g.Owner).SingleOrDefault(g => g.GUID.Equals(guid) && (g.Owner.Id == userId || g.IsPublic));
+            return !(entity == null);
         }
     }
 }
