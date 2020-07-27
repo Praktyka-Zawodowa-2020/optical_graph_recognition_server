@@ -10,7 +10,7 @@ namespace Api.Mapper
         public MappingProfile()
         {
             CreateMap<GraphEntity, GraphEntityDTO>()
-                .ForMember(destination => destination.OwnersMail, opts => opts.MapFrom(source => source.Owner == null ? Strings.UNKNOWN : source.Owner.Mail));
+                .ForMember(destination => destination.OwnersMail, opts => opts.MapFrom(source => source.Owner == null ? Strings.ANONYMOUS : source.Owner.Mail));
         }
     }
 }

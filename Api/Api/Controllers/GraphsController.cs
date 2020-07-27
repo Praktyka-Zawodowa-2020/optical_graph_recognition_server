@@ -65,14 +65,15 @@ namespace Api.Controllers
         }
 
         /// <summary>
-        /// Processes an image file of the graph entity.
+        /// Processes an image file of the graph entity. 
         /// </summary>
         /// <remarks>
-        /// Takes an image file of the specified graph entity, processes it with a python script and returns graph file in a chosen file format.
+        /// Takes an image file of the specified graph entity, processes it with a python script and returns graph file in a chosen file format. 
+        /// Can be called repeatedly with different script parameters to get the best result from an image processing.
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param> 
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param>
-        /// <param name="processRequest"></param> 
+        /// <param name="processRequest">Script parameters allowing to tweak processing to the actual needs.</param> 
         /// <response code="200"> Returns the graph file in the response body</response>
         [HttpPost("process/{guid}")]
         [Produces("application/octet-stream", "application/json")]
@@ -169,7 +170,7 @@ namespace Api.Controllers
         /// Deletes a graph entity.
         /// </summary>
         /// <remarks>
-        /// Removes a certain graph entity from server's storage and user's history. If an entity was ever set public - it is removed only from user's own history.
+        /// Removes a certain graph entity from server's storage and user's history. If an entity was ever set to public - it is removed only from user's own history.
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param>
         /// <returns></returns>
