@@ -20,10 +20,12 @@ namespace Api.Services
         private readonly AppSettings _appSettings;
         private readonly ILogger _logger;
         private readonly IMapper _mapper;
-        public GraphService(IOptions<AppSettings> appSettings,
-                            ILogger<GraphService> logger,
-                            DataContext dataContext,
-                            IMapper mapper)
+
+        public GraphService(
+            IOptions<AppSettings> appSettings,
+            ILogger<GraphService> logger,
+            DataContext dataContext,
+            IMapper mapper)
         {
             _dataContext = dataContext;
             _appSettings = appSettings.Value;
@@ -32,15 +34,15 @@ namespace Api.Services
             _targetFilePath = _appSettings.StoragePaths.UploadsDirectory;
         }
 
-        private readonly string _targetInFileName = "raw";
+        private readonly string _targetInFileName = Strings.RAW;
         private readonly string _targetFilePath;
 
-        public GraphFileDTO GetGraphFile(Guid guid, int userId, GraphFormat format)
+        public GraphFileDTO GetGraphFile(Guid guid, GraphFormat format)
         {
             var entity = _dataContext.GraphEntities
                 .Include(g => g.Owner)
-                .SingleOrDefault(g => 
-                g.GUID.Equals(guid) && (g.Owner.Id == userId || g.IsPublic));
+                .SingleOrDefault(g =>
+                g.GUID.Equals(guid));
             if (entity == null) return null;
 
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
@@ -55,10 +57,10 @@ namespace Api.Services
                 if (format == GraphFormat.RawImage && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
                     file = item;
                 else
-                if (format == GraphFormat.GraphML && item.Extension.Equals(Strings.GRAPHML))
+                if (format == GraphFormat.GraphML && item.Extension.Equals(Strings.EXT_GRAPHML))
                     file = item;
                 else
-                if (format == GraphFormat.Graph6 && item.Extension.Equals(Strings.G6))
+                if (format == GraphFormat.Graph6 && item.Extension.Equals(Strings.EXT_G6))
                     file = item;
             }
             if (file == null) return null;
@@ -72,17 +74,16 @@ namespace Api.Services
             return graphFile;
         }
 
-        public bool ProcessImageFile(Guid guid, int userId, ProcessRequest model)
+        public bool ProcessImageFile(Guid guid, ProcessRequest model)
         {
-            var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(u => u.Id == userId);
-            var entity = user.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid));
-            if (entity == null) return false;
+            var image = GetGraphFile(guid, GraphFormat.RawImage).File;
 
-            var image = GetGraphFile(guid, userId, GraphFormat.RawImage).File;
             var script = _appSettings.StoragePaths.ScriptFullPath;
             var param = "-p " + image.FullName;// + " -b " + (int) mode;
+            
             var result = new PythonRunner().Run(script, param);
             _logger.LogInformation("Processing image result:", result);
+            
             return true;
         }
 
@@ -113,9 +114,9 @@ namespace Api.Services
             return guid;
         }
 
-        public async Task<bool> SetEntityAsPublicAsync(Guid guid, int userId)
+        public async Task<bool> SetEntityAsPublicAsync(Guid guid)
         {
-            var entity = _dataContext.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid) && g.Owner.Id == userId);
+            var entity = _dataContext.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid));
             if (entity == null) return false;
 
             entity.IsPublic = true;
@@ -125,13 +126,13 @@ namespace Api.Services
             return true;
         }
 
-        public async Task<bool> RemoveEntityAsync(Guid guid, int userId)
+        public async Task<bool> RemoveEntityAsync(Guid guid)
         {
-            var user = _dataContext.Users.SingleOrDefault(u => u.Id == userId);
-            var entity = _dataContext.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid) && g.Owner.Id == userId);
-            if (entity == null) return false;
+            var entity = _dataContext.GraphEntities.SingleOrDefault(g => g.GUID.Equals(guid));
 
-            user.GraphEntities.Remove(entity);
+            var user = _dataContext.GraphEntities.Include(g => g.Owner).SingleOrDefault(g => g.GUID.Equals(guid)).Owner;
+            if (user != null) user.GraphEntities.Remove(entity);
+
             if (!entity.IsPublic)
             {
                 _dataContext.GraphEntities.Remove(entity);
@@ -161,11 +162,8 @@ namespace Api.Services
             return result;
         }
 
-        public async Task<bool> UpdateGraphEntityAsync(Guid guid, int userId, IFormFile file)
+        public async Task<bool> UpdateGraphEntityAsync(Guid guid, IFormFile file)
         {
-            var entity = _dataContext.GraphEntities.Include(g=>g.Owner).SingleOrDefault(g => g.GUID.Equals(guid) && g.Owner.Id == userId);
-            if (entity == null) return false;
-
             var path = Path.Combine(_targetFilePath, guid.ToString());
             if (!Directory.Exists(path))
                 return false;
@@ -174,6 +172,18 @@ namespace Api.Services
                 await file.CopyToAsync(targetStream);
 
             return true;
+        }
+
+        public bool CheckOwnership(Guid guid, int userId)
+        {
+            var entity = _dataContext.GraphEntities.Include(g => g.Owner).SingleOrDefault(g => g.GUID.Equals(guid) && g.Owner.Id == userId);
+            return !(entity == null);
+        }
+
+        public bool CheckOwnershipAndPublicity(Guid guid, int userId)
+        {
+            var entity = _dataContext.GraphEntities.Include(g => g.Owner).SingleOrDefault(g => g.GUID.Equals(guid) && (g.Owner.Id == userId || g.IsPublic));
+            return !(entity == null);
         }
     }
 }
