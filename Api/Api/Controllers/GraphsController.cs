@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
-{   
+{
     // TODO: Async methods
     // TODO: Proper error messages
     [Authorize]
@@ -71,16 +71,16 @@ namespace Api.Controllers
         /// Takes an image file of the specified graph entity, processes it with a python script and returns graph file in a chosen file format.
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param> 
-        /// <param name="mode">Mode, in which an image file of the graph entity is processed by the script. Defaults to GRID_BG</param> 
-        /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param> 
+        /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param>
+        /// <param name="processRequest"></param> 
         /// <response code="200"> Returns the graph file in the response body</response>
         [HttpPost("process/{guid}")]
-        [Produces("application/octet-stream")]
+        [Produces("application/octet-stream", "application/json")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
-        public IActionResult Process([FromRoute] Guid guid, [FromQuery] ProcessMode mode = ProcessMode.GRID_BG, [FromQuery] GraphFormat format = GraphFormat.GraphML)
+        public IActionResult Process([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
             var userId = GetUserId();
-            var result = _graphService.ProcessImageFile(guid, userId, mode);
+            var result = _graphService.ProcessImageFile(guid, userId, processRequest);
 
             if (result)
             {
@@ -104,6 +104,7 @@ namespace Api.Controllers
         /// <response code="200"> Returns the graph file in the response body as "application/octet-stream"</response>
         /// <response code="400">Returns error message if the file is not found.</response>
         [HttpGet("get/{guid}")]
+        [Produces("application/octet-stream", "application/json")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
         public IActionResult Get(Guid guid, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
