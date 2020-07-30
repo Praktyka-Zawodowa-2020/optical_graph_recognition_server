@@ -43,7 +43,7 @@ namespace Api.Controllers
             var userId = User.Claims.ToList()[0].Value;
             var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);
 
-            if (_graphService.CheckOwnershipAndPublicity(guid, user.Id))
+            if (!_graphService.CheckOwnershipAndPublicity(guid, user.Id))
                 return BadRequest(new ErrorMessageResponse("No permission to the graph entity"));
 
             var res = _driveService.CreateFile(user, guid, format);
