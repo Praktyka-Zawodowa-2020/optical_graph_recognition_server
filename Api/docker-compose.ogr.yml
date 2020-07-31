@@ -3,7 +3,7 @@ version: '3.4'
 services:
   kestrel:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_ENVIRONMENT=OgrServer
       - ASPNETCORE_URLS=https://+:443;http://+:80
       - ASPNETCORE_HTTPS_PORT=443
     ports:
