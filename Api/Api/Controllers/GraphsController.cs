@@ -10,7 +10,6 @@ using Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Api.Controllers
 {
@@ -26,13 +25,11 @@ namespace Api.Controllers
     {
         private readonly ImageValidator _imageValidator;
         private readonly IGraphService _graphService;
-        private readonly ILogger _logger;
 
-        public GraphsController(ImageValidator imageValidator, IGraphService graphService, ILogger<GraphsController> logger)
+        public GraphsController(ImageValidator imageValidator, IGraphService graphService)
         {
             _imageValidator = imageValidator;
             _graphService = graphService;
-            _logger = logger;
         }
 
         /// <summary>
@@ -79,11 +76,12 @@ namespace Api.Controllers
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param>
         /// <param name="processRequest">Script parameters allowing to tweak processing to the actual needs.</param> 
         /// <response code="200"> Returns the graph file in the response body</response>
+        /// <response code="400"> Returns the error message from script if image processing gone wrong.</response>
         /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         [HttpPost("process/{guid}")]
         [Produces("application/octet-stream", "application/json")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
-        public async Task<IActionResult> ProcessAsync([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest, [FromQuery] GraphFormat format = GraphFormat.GraphML)
+        public IActionResult Process([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
             var userId = GetUserId();
 
@@ -92,10 +90,10 @@ namespace Api.Controllers
 
             ProcessImageResult result = _graphService.ProcessImageFile(guid, processRequest);
 
-            if(result.Succeed)
-            { 
+            if (result.Succeed)
+            {
                 var graphFile = _graphService.GetGraphFile(guid, format);
-                if(graphFile == null)
+                if (graphFile == null)
                     return BadRequest(new ErrorMessageResponse("Processing image gone wrong. Consider changing process parameters or uploading a graph image again"));
 
                 var stream = System.IO.File.OpenRead(graphFile.File.FullName);
@@ -115,7 +113,7 @@ namespace Api.Controllers
         /// <param name="guid">GUID specyfying the graph entity.</param> 
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param> 
         /// <response code="200"> Returns the graph file in the response body as "application/octet-stream"</response>
-        /// <response code="400">Returns error message if the file is not found.</response>
+        /// <response code="400">Returns error message if the file is not found - probably image hasn't been processed yet.</response>
         /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         [HttpGet("get/{guid}")]
         [Produces("application/octet-stream", "application/json")]

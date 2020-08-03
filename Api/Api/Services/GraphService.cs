@@ -57,8 +57,8 @@ namespace Api.Services
             {
                 if (format == GraphFormat.RawImage 
                     && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName)
-                    && !item.Extension.Equals(Strings.EXT_GRAPHML)
-                    && !item.Extension.Equals(Strings.EXT_G6)
+                    && !item.Extension.Equals(Strings.EXT_GRAPHML) //temp
+                    && !item.Extension.Equals(Strings.EXT_G6)      //fix
                     )
                     file = item;
                 else
