@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Api.DTOs;
+using Api.Helpers;
 using Api.Models;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -75,6 +76,7 @@ namespace Api.Controllers
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param>
         /// <param name="processRequest">Script parameters allowing to tweak processing to the actual needs.</param> 
         /// <response code="200"> Returns the graph file in the response body</response>
+        /// <response code="400"> Returns the error message from script if image processing gone wrong.</response>
         /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         [HttpPost("process/{guid}")]
         [Produces("application/octet-stream", "application/json")]
@@ -86,17 +88,20 @@ namespace Api.Controllers
             var ownership = _graphService.CheckOwnership(guid, userId);
             if (!ownership) return GraphForbidden();
 
-            var result = _graphService.ProcessImageFile(guid, processRequest);
+            ProcessImageResult result = _graphService.ProcessImageFile(guid, processRequest);
 
-            if (result)
+            if (result.Succeed)
             {
                 var graphFile = _graphService.GetGraphFile(guid, format);
+                if (graphFile == null)
+                    return BadRequest(new ErrorMessageResponse("Processing image gone wrong. Consider changing process parameters or uploading a graph image again"));
+
                 var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
                 return File(stream, "application/octet-stream", graphFile.Name);
             }
             else
-                return BadRequest(new ErrorMessageResponse("Processing image gone wrong"));
+                return BadRequest(new ErrorMessageResponse(String.Concat(result.ErrorMessage, " Consider changing process parameters or uploading a graph image again")));
         }
 
         /// <summary>
@@ -108,7 +113,7 @@ namespace Api.Controllers
         /// <param name="guid">GUID specyfying the graph entity.</param> 
         /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param> 
         /// <response code="200"> Returns the graph file in the response body as "application/octet-stream"</response>
-        /// <response code="400">Returns error message if the file is not found.</response>
+        /// <response code="400">Returns error message if the file is not found - probably image hasn't been processed yet.</response>
         /// <response code="403"> If an operation on the graph is forbidden for user.</response> 
         [HttpGet("get/{guid}")]
         [Produces("application/octet-stream", "application/json")]
@@ -123,7 +128,7 @@ namespace Api.Controllers
             var graphFile = _graphService.GetGraphFile(guid, format);
 
             if (graphFile == null)
-                return BadRequest(new ErrorMessageResponse("There is no such file"));
+                return BadRequest(new ErrorMessageResponse("Image has not been processed yet. Process it first."));
 
             var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
