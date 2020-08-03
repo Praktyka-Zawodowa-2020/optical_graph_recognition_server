@@ -86,6 +86,7 @@ namespace Api.Services
 
             var script = _appSettings.StoragePaths.ScriptFullPath;
             var param = "-p " + image.FullName + " -b " + model.Mode.ToString();
+            _logger.LogInformation("SCRIPT PARAMETERS: " + param);
 
             var processResult = new PythonRunner().Run(script, param);
             _logger.LogInformation("Processing image result:\n " + processResult);
