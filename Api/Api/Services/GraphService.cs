@@ -55,7 +55,11 @@ namespace Api.Services
             FileInfo file = null;
             foreach (var item in files)
             {
-                if (format == GraphFormat.RawImage && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
+                if (format == GraphFormat.RawImage 
+                    && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName)
+                    && !item.Extension.Equals(Strings.EXT_GRAPHML)
+                    && !item.Extension.Equals(Strings.EXT_G6)
+                    )
                     file = item;
                 else
                 if (format == GraphFormat.GraphML && item.Extension.Equals(Strings.EXT_GRAPHML))
@@ -179,7 +183,7 @@ namespace Api.Services
             if (!Directory.Exists(path))
                 return false;
 
-            using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetInFileName, Path.GetExtension(file.FileName))), FileMode.Truncate))
+            using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetInFileName, Path.GetExtension(file.FileName))), FileMode.Create))
                 await file.CopyToAsync(targetStream);
 
             return true;
