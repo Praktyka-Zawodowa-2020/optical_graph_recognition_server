@@ -44,17 +44,11 @@ namespace Api.Services
                 .SingleOrDefault(g =>
                 g.GUID.Equals(guid));
             if (entity == null)
-            {
-                _logger.LogError("USER DOESNT HAVE ENTITY: " + guid);
                 return null;
-            }
 
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
             if (!dir.Exists)
-            {
-                _logger.LogError("DIR DOESNT EXIST: " + dir);
                 return null;
-            }
 
             FileInfo[] files = dir.GetFiles("*", SearchOption.TopDirectoryOnly);
 
@@ -71,10 +65,7 @@ namespace Api.Services
                     file = item;
             }
             if (file == null)
-            {
-                _logger.LogError("FILE DOESNT EXIST: " + format);
                 return null;
-            }
 
             var graphFile = new GraphFileDTO()
             {
@@ -85,18 +76,26 @@ namespace Api.Services
             return graphFile;
         }
 
-        public bool ProcessImageFile(Guid guid, ProcessRequest model)
+        public ProcessImageResult ProcessImageFile(Guid guid, ProcessRequest model)
         {
             var image = GetGraphFile(guid, GraphFormat.RawImage).File;
 
             var script = _appSettings.StoragePaths.ScriptFullPath;
             var param = "-p " + image.FullName;// + " -b " + (int) mode;
 
-            _logger.LogInformation(script + " " + param);
-            var result = new PythonRunner().Run(script, param);
-            _logger.LogInformation("Processing image result:\n " + result);
+            var processResult = new PythonRunner().Run(script, param);
+            _logger.LogInformation("Processing image result:\n " + processResult);
 
-            return true;
+            var result = new ProcessImageResult();
+            if(processResult == "0")
+                result.Succeed = true;
+            else
+            {
+                result.Succeed = false;
+                result.ErrorMessage = processResult.Remove(0, 3);
+            }
+
+            return result;
         }
 
         public async Task<Guid> CreateGraphEntity(CreateGraphRequest model, string validExtension, int userId)

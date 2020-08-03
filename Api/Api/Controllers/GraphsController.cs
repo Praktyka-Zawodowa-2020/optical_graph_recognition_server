@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Api.DTOs;
+using Api.Helpers;
 using Api.Models;
 using Api.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -82,36 +83,30 @@ namespace Api.Controllers
         [HttpPost("process/{guid}")]
         [Produces("application/octet-stream", "application/json")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
-        public IActionResult Process([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest, [FromQuery] GraphFormat format = GraphFormat.GraphML)
+        public async Task<IActionResult> ProcessAsync([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
             var userId = GetUserId();
-
-            _logger.LogInformation("USER ID" + userId);
-
-            if (guid == null)
-                _logger.LogError("GUID NULL");
-            if (processRequest == null)
-                _logger.LogError("processRequest NULL");
-            if (processRequest.Mode == 0)
-                _logger.LogError("processRequest mode NULL");
 
             var ownership = _graphService.CheckOwnership(guid, userId);
             if (!ownership) return GraphForbidden();
 
-            var result = _graphService.ProcessImageFile(guid, processRequest);
+            ProcessImageResult result = _graphService.ProcessImageFile(guid, processRequest);
 
-            if (result)
-            {
+            if(result.Succeed)
+            { 
                 var graphFile = _graphService.GetGraphFile(guid, format);
                 if(graphFile == null)
-                    return BadRequest(new ErrorMessageResponse("Processing image gone wrong"));
+                    return BadRequest(new ErrorMessageResponse("Processing image gone wrong. Consider changing process parameters or uploading a graph image again"));
 
                 var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
                 return File(stream, "application/octet-stream", graphFile.Name);
             }
             else
-                return BadRequest(new ErrorMessageResponse("Processing image gone wrong"));
+            {
+                await _graphService.RemoveEntityAsync(guid);
+                return BadRequest(new ErrorMessageResponse(String.Concat(result.ErrorMessage, " Consider changing process parameters or uploading a graph image again")));
+            }
         }
 
         /// <summary>
@@ -138,7 +133,7 @@ namespace Api.Controllers
             var graphFile = _graphService.GetGraphFile(guid, format);
 
             if (graphFile == null)
-                return BadRequest(new ErrorMessageResponse("There is no such file"));
+                return BadRequest(new ErrorMessageResponse("Image has not been processed yet. Process it first."));
 
             var stream = System.IO.File.OpenRead(graphFile.File.FullName);
 
