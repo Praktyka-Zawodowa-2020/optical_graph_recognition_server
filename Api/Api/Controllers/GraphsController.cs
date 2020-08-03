@@ -86,7 +86,7 @@ namespace Api.Controllers
         {
             var userId = GetUserId();
 
-            _logger.LogInformation("USER ID" + userId);
+            _logger.LogInformation("USER ID " + userId);
 
             if (guid == null)
                 _logger.LogError("GUID NULL");
@@ -104,7 +104,7 @@ namespace Api.Controllers
             {
                 var graphFile = _graphService.GetGraphFile(guid, format);
                 if (graphFile == null)
-                    _logger.LogError("graphFile NULL");
+                    _logger.LogError("graphFile NULL: "+guid);
                 var stream = System.IO.File.OpenRead(graphFile.File.FullName);
                 if (stream == null)
                     _logger.LogError("STREAM NULL");

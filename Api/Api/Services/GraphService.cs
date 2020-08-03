@@ -43,11 +43,18 @@ namespace Api.Services
                 .Include(g => g.Owner)
                 .SingleOrDefault(g =>
                 g.GUID.Equals(guid));
-            if (entity == null) return null;
+            if (entity == null)
+            {
+                _logger.LogError("USER DOESNT HAVE ENTITY: " + guid);
+                return null;
+            }
 
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
             if (!dir.Exists)
+            {
+                _logger.LogError("DIR DOESNT EXIST: "+dir);
                 return null;
+            }
 
             FileInfo[] files = dir.GetFiles("*", SearchOption.TopDirectoryOnly);
 
@@ -63,7 +70,11 @@ namespace Api.Services
                 if (format == GraphFormat.Graph6 && item.Extension.Equals(Strings.EXT_G6))
                     file = item;
             }
-            if (file == null) return null;
+            if (file == null)
+            {
+                _logger.LogError("FILE DOESNT EXIST: " + format);
+                return null;
+            }
 
             var graphFile = new GraphFileDTO()
             {
