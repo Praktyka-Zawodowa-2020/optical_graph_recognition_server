@@ -163,6 +163,25 @@ namespace Api.Services
             return true;
         }
 
+        public async Task<bool> RemoveAllUsersEntitiesAsync(int userId)
+        {
+            var user = _dataContext.Users.Include(u=>u.GraphEntities).SingleOrDefault(u => u.Id == userId);
+            if (user == null) return false;
+
+            foreach (var entity in user.GraphEntities)
+            {
+                _dataContext.GraphEntities.Remove(entity);
+
+                var path = Path.Combine(_appSettings.StoragePaths.UploadsDirectory, entity.GUID.ToString());
+                if (Directory.Exists(path))
+                    Directory.Delete(path, true);
+            }
+
+            await _dataContext.SaveChangesAsync();
+
+            return true;
+        }
+
         public IEnumerable<GraphEntityDTO> GetHistory(int userId)
         {
             var user = _dataContext.Users.Include(u => u.GraphEntities).SingleOrDefault(u => u.Id == userId);
