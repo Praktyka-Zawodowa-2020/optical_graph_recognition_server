@@ -85,7 +85,7 @@ namespace Api.Services
             var image = GetGraphFile(guid, GraphFormat.RawImage).File;
 
             var script = _appSettings.StoragePaths.ScriptFullPath;
-            var param = "-p " + image.FullName;// + " -b " + (int) mode;
+            var param = "-p " + image.FullName + " -b " + model.Mode.ToString();
 
             var processResult = new PythonRunner().Run(script, param);
             _logger.LogInformation("Processing image result:\n " + processResult);

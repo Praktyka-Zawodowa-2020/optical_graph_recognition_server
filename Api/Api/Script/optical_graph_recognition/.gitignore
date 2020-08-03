@@ -1,6 +1,0 @@
-# gitignore file
-__pycache__
-.idea
-venv
-graphs
-*.xlsx
