@@ -103,10 +103,7 @@ namespace Api.Controllers
                 return File(stream, "application/octet-stream", graphFile.Name);
             }
             else
-            {
-                await _graphService.RemoveEntityAsync(guid);
                 return BadRequest(new ErrorMessageResponse(String.Concat(result.ErrorMessage, " Consider changing process parameters or uploading a graph image again")));
-            }
         }
 
         /// <summary>
