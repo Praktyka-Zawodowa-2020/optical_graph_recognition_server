@@ -87,7 +87,7 @@ namespace Api.Services
             _logger.LogInformation("Processing image result:\n " + processResult);
 
             var result = new ProcessImageResult();
-            if(processResult == "0")
+            if(processResult[0] == '0')
                 result.Succeed = true;
             else
             {
