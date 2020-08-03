@@ -92,7 +92,7 @@ namespace Api.Services
             else
             {
                 result.Succeed = false;
-                result.ErrorMessage = processResult.Remove(0, 3);
+                result.ErrorMessage = processResult;
             }
 
             return result;
