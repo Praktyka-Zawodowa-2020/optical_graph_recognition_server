@@ -19,6 +19,7 @@ namespace Api.Services
         Task<bool> SetEntityAsPublicAsync(Guid guid);
         Task<bool>UpdateGraphEntityAsync(Guid guid, IFormFile file);
         Task<bool> RemoveEntityAsync(Guid guid);
+        Task<bool> RemoveAllUsersEntitiesAsync(int userId);
         ProcessImageResult ProcessImageFile(Guid guid, ProcessRequest model);
         GraphFileDTO GetGraphFile(Guid guid, GraphFormat format);
         IEnumerable<GraphEntityDTO> GetHistory(int userId);

@@ -24,12 +24,13 @@ MAX_FILL_RATIO: float = 0.14  # ratio of object pixels to all pixels
 NOISE_FACTOR: float = 0.0001  # px^2
 
 
-def preprocess(source: np.ndarray, imshow_enabled: bool) -> (np.ndarray, np.ndarray, np.ndarray):
+def preprocess(source: np.ndarray, imshow_enabled: bool, mode: int) -> (np.ndarray, np.ndarray, np.ndarray):
     """
     Processes source image by reshaping, thresholding, transforming and cropping.
 
     :param source: input image
     :param imshow_enabled: flag determining to display (or not) preprocessing steps
+    :param mode: GRID_BG, CLEAN_BG, PRINTED
     :return: reshaped, binarized, and fully preprocessed images.
     """
     # Reshape image to standard resolution
@@ -42,7 +43,7 @@ def preprocess(source: np.ndarray, imshow_enabled: bool) -> (np.ndarray, np.ndar
     binary, threshold_value = threshold(gray, MIN_BRIGHT_VAL, MAX_FILL_RATIO)
 
     # Transform image (filter noise, remove grid, ...)
-    transformed = transform(binary, threshold_value, Mode.CLEAN_BG)  # TODO - mode from command line
+    transformed = transform(binary, threshold_value, mode)
 
     # Remove unnecessary background
     transformed, [reshaped, binary] = crop_bg_padding(transformed, [reshaped, binary])
@@ -126,7 +127,7 @@ def threshold(gray_image: np.ndarray, min_bright_value: int = 128, max_fill_rati
     return binary, threshold_value
 
 
-def transform(binary_image: np.ndarray, thresh_val: int, mode: Mode) -> np.ndarray:
+def transform(binary_image: np.ndarray, thresh_val: int, mode: int) -> np.ndarray:
     """
     Filter image from noise (and sometimes grid) by performing various transformations depending on mode parameter.
 
@@ -326,20 +327,26 @@ def remove_vertical_grid(binary_image: np.ndarray) -> np.ndarray:
     return image
 
 
-def crop_bg_padding(binary_transformed: np.ndarray, images: list) -> (np.ndarray, list):
+def crop_bg_padding(binary_transformed: np.ndarray, images: list, padding: int = 15) -> (np.ndarray, list):
     """
     Crop images to remove background padding (unnecessary background surrounding graph)
+    Usually some padding remains, so morphological operations (e.g. erosion) work properly
 
     :param binary_transformed: binarized and transformed (noise filtered) input image
     :param images: all other images
+    :param padding: size of padding that remain in the picture
     :return: cropped images in the same order as in input - separately: transformed, and all other in list
     """
     # Find all object pixels in transformed image
     object_pixels = cv.findNonZero(binary_transformed)
     # Find minimal rectangular area in transformed image, that includes all object pixels - area without padding
-    left, top, width, height = cv.boundingRect(object_pixels)
-    right = left + width
-    bottom = top + height
+    x, y, width, height = cv.boundingRect(object_pixels)
+    # leave padding of given size if possible
+    image_h, image_w = binary_transformed.shape[:]
+    left = x - padding if (x - padding) > 0 else 0
+    right = x + width + padding if (x + width + padding) < image_w else image_w
+    top = y - padding if (y - padding) > 0 else 0
+    bottom = y + height + padding if (y + height + padding) < image_h else image_h
 
     # Crop all given images to new minimal size - removes padding
     binary_transformed = binary_transformed[top:bottom, left:right]

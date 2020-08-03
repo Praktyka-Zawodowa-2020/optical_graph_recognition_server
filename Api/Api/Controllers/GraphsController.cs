@@ -203,6 +203,26 @@ namespace Api.Controllers
         }
 
         /// <summary>
+        /// Deletes all of user's graph entities.
+        /// </summary>
+        /// <remarks>
+        /// Removes all user's entities from server's storage and history. If an entity was ever set to public - it is removed only from user's own history.
+        /// </remarks>
+        /// <returns></returns>
+        [HttpDelete("delete-all")]
+        public async Task<IActionResult> DeleteAsync()
+        {
+            var userId = GetUserId();
+
+            bool result = await _graphService.RemoveAllUsersEntitiesAsync(userId);
+
+            if (result)
+                return Ok(new { message = "success" });
+            else
+                return BadRequest(new ErrorMessageResponse("Graphs are already removed"));
+        }
+
+        /// <summary>
         /// Gets user's history of graph entities.
         /// </summary>
         /// <remarks>
