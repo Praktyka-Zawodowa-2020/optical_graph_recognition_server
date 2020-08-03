@@ -27,7 +27,7 @@ namespace Api.Controllers
         private readonly IGraphService _graphService;
         private readonly ILogger _logger;
 
-        public GraphsController(ImageValidator imageValidator, IGraphService graphService, ILogger logger)
+        public GraphsController(ImageValidator imageValidator, IGraphService graphService, ILogger<GraphsController> logger)
         {
             _imageValidator = imageValidator;
             _graphService = graphService;
