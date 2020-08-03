@@ -27,7 +27,7 @@ namespace Api.Controllers
         private readonly IGraphService _graphService;
         private readonly ILogger _logger;
 
-        public GraphsController(ImageValidator imageValidator, IGraphService graphService, ILogger<GraphsController> logger)
+        public GraphsController(ImageValidator imageValidator, IGraphService graphService, ILogger logger)
         {
             _imageValidator = imageValidator;
             _graphService = graphService;
@@ -86,7 +86,7 @@ namespace Api.Controllers
         {
             var userId = GetUserId();
 
-            _logger.LogInformation("USER ID " + userId);
+            _logger.LogInformation("USER ID" + userId);
 
             if (guid == null)
                 _logger.LogError("GUID NULL");
@@ -103,11 +103,10 @@ namespace Api.Controllers
             if (result)
             {
                 var graphFile = _graphService.GetGraphFile(guid, format);
-                if (graphFile == null)
-                    _logger.LogError("graphFile NULL: "+guid);
+                if(graphFile == null)
+                    return BadRequest(new ErrorMessageResponse("Processing image gone wrong"));
+
                 var stream = System.IO.File.OpenRead(graphFile.File.FullName);
-                if (stream == null)
-                    _logger.LogError("STREAM NULL");
 
                 return File(stream, "application/octet-stream", graphFile.Name);
             }
