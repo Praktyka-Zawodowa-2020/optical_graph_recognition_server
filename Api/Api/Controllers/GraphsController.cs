@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Api.DTOs;
 using Api.Helpers;
@@ -69,11 +68,10 @@ namespace Api.Controllers
         /// Processes an image file of the graph entity. 
         /// </summary>
         /// <remarks>
-        /// Takes an image file of the specified graph entity, processes it with a python script and returns graph file in a chosen file format. 
+        /// Takes an image file of the specified graph entity and processes it with a python script. 
         /// Can be called repeatedly with different script parameters to get the best result from an image processing.
         /// </remarks>
         /// <param name="guid">GUID specyfying the graph entity.</param> 
-        /// <param name="format">Format, in which the processed graph file is returned. Defaults to GraphML.</param>
         /// <param name="processRequest">Script parameters allowing to tweak processing to the actual needs.</param> 
         /// <response code="200"> Returns the graph file in the response body</response>
         /// <response code="400"> Returns the error message from script if image processing gone wrong.</response>
@@ -81,7 +79,7 @@ namespace Api.Controllers
         [HttpPost("process/{guid}")]
         [Produces("application/octet-stream", "application/json")]
         [ProducesResponseType(typeof(FileContentResult), 200)]
-        public IActionResult Process([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest, [FromQuery] GraphFormat format = GraphFormat.GraphML)
+        public IActionResult Process([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest)
         {
             var userId = GetUserId();
 
@@ -91,17 +89,9 @@ namespace Api.Controllers
             ProcessImageResult result = _graphService.ProcessImageFile(guid, processRequest);
 
             if (result.Succeed)
-            {
-                var graphFile = _graphService.GetGraphFile(guid, format);
-                if (graphFile == null)
-                    return BadRequest(new ErrorMessageResponse("Processing image gone wrong. Consider changing process parameters or uploading a graph image again"));
-
-                var stream = System.IO.File.OpenRead(graphFile.File.FullName);
-
-                return File(stream, "application/octet-stream", graphFile.Name);
-            }
+                return Ok("Succeeded");
             else
-                return BadRequest(new ErrorMessageResponse(String.Concat(result.ErrorMessage, " Consider changing process parameters or uploading a graph image again")));
+                return BadRequest(new ErrorMessageResponse(string.Concat(result.ErrorMessage, " Consider changing process parameters.")));
         }
 
         /// <summary>
@@ -126,7 +116,6 @@ namespace Api.Controllers
             if (!allowed) return GraphForbidden();
 
             var graphFile = _graphService.GetGraphFile(guid, format);
-
             if (graphFile == null)
                 return BadRequest(new ErrorMessageResponse("Image has not been processed yet. Process it first."));
 
@@ -158,7 +147,7 @@ namespace Api.Controllers
             var result = await _graphService.UpdateGraphEntityAsync(guid, file);
 
             if (result)
-                return Ok();
+                return Ok("Succeeded");
             else
                 return BadRequest(new ErrorMessageResponse("Update gone wrong"));
         }
