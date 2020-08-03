@@ -103,7 +103,11 @@ namespace Api.Controllers
             if (result)
             {
                 var graphFile = _graphService.GetGraphFile(guid, format);
+                if (graphFile == null)
+                    _logger.LogError("graphFile NULL");
                 var stream = System.IO.File.OpenRead(graphFile.File.FullName);
+                if (stream == null)
+                    _logger.LogError("STREAM NULL");
 
                 return File(stream, "application/octet-stream", graphFile.Name);
             }
