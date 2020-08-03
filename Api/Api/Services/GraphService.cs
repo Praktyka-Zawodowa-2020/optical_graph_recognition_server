@@ -43,7 +43,8 @@ namespace Api.Services
                 .Include(g => g.Owner)
                 .SingleOrDefault(g =>
                 g.GUID.Equals(guid));
-            if (entity == null) return null;
+            if (entity == null)
+                return null;
 
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
             if (!dir.Exists)
@@ -54,7 +55,11 @@ namespace Api.Services
             FileInfo file = null;
             foreach (var item in files)
             {
-                if (format == GraphFormat.RawImage && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName))
+                if (format == GraphFormat.RawImage 
+                    && Path.GetFileNameWithoutExtension(item.Name).Equals(_targetInFileName)
+                    && !item.Extension.Equals(Strings.EXT_GRAPHML) //temp
+                    && !item.Extension.Equals(Strings.EXT_G6)      //fix
+                    )
                     file = item;
                 else
                 if (format == GraphFormat.GraphML && item.Extension.Equals(Strings.EXT_GRAPHML))
@@ -63,7 +68,8 @@ namespace Api.Services
                 if (format == GraphFormat.Graph6 && item.Extension.Equals(Strings.EXT_G6))
                     file = item;
             }
-            if (file == null) return null;
+            if (file == null)
+                return null;
 
             var graphFile = new GraphFileDTO()
             {
@@ -74,17 +80,26 @@ namespace Api.Services
             return graphFile;
         }
 
-        public bool ProcessImageFile(Guid guid, ProcessRequest model)
+        public ProcessImageResult ProcessImageFile(Guid guid, ProcessRequest model)
         {
             var image = GetGraphFile(guid, GraphFormat.RawImage).File;
 
             var script = _appSettings.StoragePaths.ScriptFullPath;
             var param = "-p " + image.FullName;// + " -b " + (int) mode;
-            
-            var result = new PythonRunner().Run(script, param);
-            _logger.LogInformation("Processing image result:", result);
-            
-            return true;
+
+            var processResult = new PythonRunner().Run(script, param);
+            _logger.LogInformation("Processing image result:\n " + processResult);
+
+            var result = new ProcessImageResult();
+            if(processResult[0] == '0')
+                result.Succeed = true;
+            else
+            {
+                result.Succeed = false;
+                result.ErrorMessage = processResult;
+            }
+
+            return result;
         }
 
         public async Task<Guid> CreateGraphEntity(CreateGraphRequest model, string validExtension, int userId)
@@ -168,7 +183,7 @@ namespace Api.Services
             if (!Directory.Exists(path))
                 return false;
 
-            using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetInFileName, Path.GetExtension(file.FileName))), FileMode.Truncate))
+            using (var targetStream = new FileStream(Path.Combine(path, string.Concat(_targetInFileName, Path.GetExtension(file.FileName))), FileMode.Create))
                 await file.CopyToAsync(targetStream);
 
             return true;

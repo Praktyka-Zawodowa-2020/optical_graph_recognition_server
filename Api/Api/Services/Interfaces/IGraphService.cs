@@ -1,4 +1,5 @@
 ﻿using Api.DTOs;
+using Api.Helpers;
 using Api.Models;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -18,7 +19,7 @@ namespace Api.Services
         Task<bool> SetEntityAsPublicAsync(Guid guid);
         Task<bool>UpdateGraphEntityAsync(Guid guid, IFormFile file);
         Task<bool> RemoveEntityAsync(Guid guid);
-        bool ProcessImageFile(Guid guid, ProcessRequest model);
+        ProcessImageResult ProcessImageFile(Guid guid, ProcessRequest model);
         GraphFileDTO GetGraphFile(Guid guid, GraphFormat format);
         IEnumerable<GraphEntityDTO> GetHistory(int userId);
         IEnumerable<GraphEntityDTO> GetRecent(int amount);

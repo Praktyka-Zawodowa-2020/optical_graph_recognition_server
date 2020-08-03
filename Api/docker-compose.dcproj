@@ -9,6 +9,7 @@
     <DockerServiceName>api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="docker-compose.ogr.yml" />
     <None Include="docker-compose.override.yml">
       <DependentUpon>docker-compose.yml</DependentUpon>
     </None>
