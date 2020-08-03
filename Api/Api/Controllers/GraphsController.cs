@@ -9,6 +9,7 @@ using Api.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Api.Controllers
 {
@@ -24,11 +25,13 @@ namespace Api.Controllers
     {
         private readonly ImageValidator _imageValidator;
         private readonly IGraphService _graphService;
+        private readonly ILogger _logger;
 
-        public GraphsController(ImageValidator imageValidator, IGraphService graphService)
+        public GraphsController(ImageValidator imageValidator, IGraphService graphService, ILogger logger)
         {
             _imageValidator = imageValidator;
             _graphService = graphService;
+            _logger = logger;
         }
 
         /// <summary>
@@ -82,6 +85,15 @@ namespace Api.Controllers
         public IActionResult Process([FromRoute] Guid guid, [FromBody] ProcessRequest processRequest, [FromQuery] GraphFormat format = GraphFormat.GraphML)
         {
             var userId = GetUserId();
+
+            _logger.LogInformation("USER ID" + userId);
+
+            if (guid == null)
+                _logger.LogError("GUID NULL");
+            if (processRequest == null)
+                _logger.LogError("processRequest NULL");
+            if (processRequest.Mode == 0)
+                _logger.LogError("processRequest mode NULL");
 
             var ownership = _graphService.CheckOwnership(guid, userId);
             if (!ownership) return GraphForbidden();
