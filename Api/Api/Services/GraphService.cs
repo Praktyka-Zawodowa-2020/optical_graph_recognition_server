@@ -52,7 +52,7 @@ namespace Api.Services
             DirectoryInfo dir = new DirectoryInfo(Path.Combine(_targetFilePath, guid.ToString()));
             if (!dir.Exists)
             {
-                _logger.LogError("DIR DOESNT EXIST: "+dir);
+                _logger.LogError("DIR DOESNT EXIST: " + dir);
                 return null;
             }
 
@@ -91,10 +91,11 @@ namespace Api.Services
 
             var script = _appSettings.StoragePaths.ScriptFullPath;
             var param = "-p " + image.FullName;// + " -b " + (int) mode;
-            
+
+            _logger.LogInformation(script + " " + param);
             var result = new PythonRunner().Run(script, param);
-            _logger.LogInformation("Processing image result:", result);
-            
+            _logger.LogInformation("Processing image result:\n " + result);
+
             return true;
         }
 
