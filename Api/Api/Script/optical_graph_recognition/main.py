@@ -77,7 +77,7 @@ def main(args=None):
 
         # display all windows until key is pressed
         #cv.waitKey(0)
-	    print("0")
+        print("0")
         return "0"
     else:
         print("1: Error opening image!")
