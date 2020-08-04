@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers
 {
+    /// <summary>
+    /// NOT IN USE. FOR FURTHER DEVELOPEMENT PURPOSE.
+    /// </summary>
     [Authorize]
     [Route("api/drive/")]
     [ApiController]
@@ -38,7 +41,7 @@ namespace Api.Controllers
         /// <param name="format">Format, in which the graph file is uploaded. Defaults to raw image.</param> 
         /// <response code="400">Bad request.</response>
         [HttpPost("upload/{guid}")]
-        public async System.Threading.Tasks.Task<IActionResult> SendFileToDriveAsync(Guid guid, [FromQuery] GraphFormat format = GraphFormat.RawImage)
+        private async System.Threading.Tasks.Task<IActionResult> SendFileToDriveAsync(Guid guid, [FromQuery] GraphFormat format = GraphFormat.RawImage)
         {
             var userId = User.Claims.ToList()[0].Value;
             var user = _dataContext.Users.ToList().SingleOrDefault(u => u.Id.ToString() == userId);
