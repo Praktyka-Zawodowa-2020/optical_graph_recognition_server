@@ -127,8 +127,7 @@ namespace Api
             {
                 Version = "v1",
                 Title = "Optical Graph Recognition Server API",
-                Description = "ASP.NET Core Web API <p> Serves Graph6 and GraphML files based on given picture containing graph. " +
-                "It also integrates GoogleDriveApi, so files can be send directly to user's Drive.",
+                Description = "ASP.NET Core Web API. <p> Visit <a href=\"https://github.com/Praktyka-Zawodowa-2020/optical_graph_recognition_server\">GitHub</a>",
                 Contact = new OpenApiContact
                 {
                     Name = "Grzegorz Choiñski",

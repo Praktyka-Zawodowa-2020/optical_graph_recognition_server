@@ -2,7 +2,7 @@
 
 ## Optical Graph Recognition App - Server
 
-REST API that serves *Graph6* and *GraphML* files based on given picture containing graph. It also integrates GoogleDriveApi, so files can be send directly to user's Drive. 
+REST API that serves *Graph6* and *GraphML* files based on given picture containing graph.  It also integrates Google Accounts, so user is able to call chosen GoogleAPIs.
 
 To see more about image processing itself, visit [script's repository](https://github.com/Praktyka-Zawodowa-2020/optical_graph_recognition).
 
