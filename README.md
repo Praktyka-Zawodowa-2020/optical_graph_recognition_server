@@ -6,7 +6,9 @@ REST API that serves *Graph6* and *GraphML* files based on given picture contain
 
 To see more about image processing itself, visit [script's repository](https://github.com/Praktyka-Zawodowa-2020/optical_graph_recognition).
 
-## Deploying with Docker-Compose
+## Deployment with Docker-Compose 
+
+### Locally
 
 Visit [this page](https://docs.docker.com/docker-for-windows/install/) in order to install *Docker for Windows*.
 
@@ -21,6 +23,20 @@ To deploy this server locally, use compose commands listed below - execute them 
 `$ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up`
 
 Then, you can access *https://localhost/swagger* to see API specification.
+
+In order to TLS work properly, a CA Certificate needs to be provided for Kestrel (.netCore http server), e.g. Self-Signed Certificate. Check **Api/Api/Certs/howTo.txt** for further instructions on how to generate such one. 
+
+Then, Client App must trust this certificate; for Windows/Chrome **double click .pfx* -> *Install certificate* and insert it in *Trusted Root Certification Authorities storage*. For more instructions how to trust certificates on certain OSs, check [this page](http://wiki.cacert.org/FAQ/ImportRootCert).
+
+### Remotely
+
+Same procedure as locally. However, if the remote server has own domain, [Let's Encrypt](https://letsencrypt.org/) certificate can be provided for Kestrel and therefore Client App won't need to trust any cert by itself, as they are trusted by many OS by default. To do so, another .yml file need to be created, e.g. **docker-compose.ogr.yml** that specifies: 
+* volume to the cert (*when container starts it will create an empty directory for host, where cert needs to be put, but throw an error because file doesn't exist yet; just put them there and restart container; file can be also provided before creating container, but be careful about paths*)
+* *ASPNETCORE_ENVIRONMENT* variable, which points at certain appsetttings.json file (e.g. **appsettings.OgrServer.json**), which specifies an actual path for **.pfx** file along with its password (previously created volume points at folder with this files inside the container). 
+
+Having those, just deploy server with command:
+
+`$ docker-compose -f docker-compose.yml -f docker-compose.ogr.yml up`
 
 ## Database
 
