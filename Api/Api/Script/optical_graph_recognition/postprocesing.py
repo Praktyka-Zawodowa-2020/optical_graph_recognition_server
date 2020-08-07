@@ -3,6 +3,17 @@ from typing import List
 from shared import Color
 
 
+def postprocess(vertices_list: List[Vertex], save_path: str):
+    """
+    Save graph in .graph6 abd .graphml formats
+
+    :param vertices_list: list of detected vertices and connections between them
+    :param save_path: path for saving resulted files
+    """
+    graphml_format(vertices_list, save_path)
+    graph6_format(vertices_list, save_path)
+
+
 def graph6_format(vertex: List[Vertex], save_path: str):
     """
     Saves the graph in .graph6 format
@@ -107,7 +118,7 @@ def graphml_format(vertex: List[Vertex], save_path: str):
         else:
             node = node + '<y:Fill color="#000000" transparent="true"/>\n'  # unfilled vertices
         node = node + '<y:BorderStyle color="#000000" type="line" width="4.0"/>\n'
-        node = node + '<y:Shape type="circle"/>\n'
+        node = node + '<y:Shape type="ellipse"/>\n'
         node = node + '</y:ShapeNode>\n'
         node = node + '</data>\n'
         node = node + '</node>\n'
